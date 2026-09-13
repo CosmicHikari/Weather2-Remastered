@@ -22,6 +22,8 @@ public class ClientHandler
 		}
 		else if (MC.world != null && !inGame)
 		{
+			if (MC.player == null) return;
+			
 			ConfigModEX.debug("Detected new world. Preparing to client handler...");
 			inGame = true;
 			permissionLevel = ConfigManager.getPermissionLevel();
@@ -33,6 +35,8 @@ public class ClientHandler
 	
 	public static void onGameTick()
 	{
+		if (MC.player == null) return;
+		
 		int permission;
 		if (permissionLevel != (permission = MC.player.getPermissionLevel()))
 		{
