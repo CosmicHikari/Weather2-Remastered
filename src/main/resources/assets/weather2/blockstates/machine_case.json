@@ -1,6 +1,7 @@
 {
-  "variants":
-  {
-    "normal": {"model": "weather2:machine_case"}
+  "variants": {
+    "": {
+      "model": "weather2:block/machine_case"
+    }
   }
 }

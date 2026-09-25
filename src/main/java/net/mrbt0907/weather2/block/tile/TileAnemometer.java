@@ -9,15 +9,11 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.mrbt0907.weather2.api.WindReader;
-import net.mrbt0907.weather2.registry.BlockRegistry;
 import net.mrbt0907.weather2.registry.TileEntityRegistry;
 import net.mrbt0907.weather2.util.Maths.Vec3;
 import net.mrbt0907.weather2.util.WeatherUtilEntity;
 
-public class TileAnemometer extends TileEntity implements ITickableTileEntity
-{
-
-    //yay spinny anemometer :)
+public class TileAnemometer extends TileEntity implements ITickableTileEntity {
 
     public float smoothAngle = 0;
     public float smoothAnglePrev = 0;
@@ -31,23 +27,20 @@ public class TileAnemometer extends TileEntity implements ITickableTileEntity
 
     public boolean isOutsideCached = false;
 
-    public TileAnemometer()
-    {
+    public TileAnemometer() {
         this(TileEntityRegistry.ANEMOMETER_TILE.get());
     }
 
-    public TileAnemometer(TileEntityType<?> tileEntityTypeIn)
-    {
+    public TileAnemometer(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
     }
 
     @Override
-    public void tick()
-    {
+    public void tick() {
         if (level.isClientSide) {
 
             if (level.getGameTime() % 40 == 0)
-                isOutsideCached = WeatherUtilEntity.isPosOutside(level, new Vec3(worldPosition.getX()+0.5F, worldPosition.getY()+0.5F, worldPosition.getZ()+0.5F));
+                isOutsideCached = WeatherUtilEntity.isPosOutside(level, new Vec3(worldPosition.getX() + 0.5F, worldPosition.getY() + 0.5F, worldPosition.getZ() + 0.5F));
 
             if (isOutsideCached) {
                 float windSpeed = WindReader.getWindSpeed(level, new Vec3(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
@@ -77,14 +70,12 @@ public class TileAnemometer extends TileEntity implements ITickableTileEntity
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound)
-    {
+    public CompoundNBT save(CompoundNBT compound) {
         return super.save(compound);
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound)
-    {
+    public void load(BlockState state, CompoundNBT compound) {
         super.load(state, compound);
     }
 }

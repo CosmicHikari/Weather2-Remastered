@@ -1,6 +1,6 @@
 {
   "parent": "weather2:block/wind_sensor",
   "textures": {
-    "all": "weather2:blocks/wind_sensor"
+    "all": "weather2:block/wind_sensor"
   }
 }

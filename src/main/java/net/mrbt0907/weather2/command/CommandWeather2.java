@@ -107,14 +107,12 @@ public class CommandWeather2 {
                                         .executes(context -> executeGrablistAction(
                                                 context.getSource(),
                                                 StringArgumentType.getString(context, "action"),
-                                                StringArgumentType.getString(context, "entry1"),
-                                                null
+                                                StringArgumentType.getString(context, "entry1")
                                         ))
                                 )
                                 .executes(context -> executeGrablistAction(
                                         context.getSource(),
                                         StringArgumentType.getString(context, "action"),
-                                        null,
                                         null
                                 ))
                         )
@@ -213,7 +211,7 @@ public class CommandWeather2 {
     private static boolean hasPermission(CommandSource source, int level) {
         try {
             ServerPlayerEntity player = source.getPlayerOrException();
-            return ConfigManager.getPermissionLevel(player.getUUID()) >= level;
+            return ConfigManager.getPermissionLevel(player) >= level;
         } catch (CommandSyntaxException e) {
             return source.hasPermission(level);
         }
@@ -224,7 +222,10 @@ public class CommandWeather2 {
             case "all":
                 WeatherAPI.refreshDimensionRules();
                 WeatherAPI.refreshGrabRules();
-                PacketRefresh.resetSounds(source.getPlayerOrException());
+                try {
+                    PacketRefresh.resetSounds(source.getPlayerOrException());
+                } catch (CommandSyntaxException e) {
+                }
                 sendMessage(source, "config.refresh.all.success");
                 break;
             case "dimensionlist":
@@ -272,7 +273,7 @@ public class CommandWeather2 {
         return 1;
     }
 
-    private static int executeGrablistAction(CommandSource source, String action, @Nullable String entry1, @Nullable String entry2) {
+    private static int executeGrablistAction(CommandSource source, String action, @Nullable String entry1) {
         try {
             ServerPlayerEntity player = source.getPlayerOrException();
             Item itemMain = player.getMainHandItem().getItem();
@@ -284,48 +285,64 @@ public class CommandWeather2 {
                     if (entryMain.isEmpty()) {
                         sendMessage(source, "config.grablist.addgrabentry.fail");
                         return 0;
-                    } else {
-                        if (ConfigGrab.grab_list_entries.isEmpty())
-                            ConfigGrab.grab_list_entries += entryMain;
-                        else
-                            ConfigGrab.grab_list_entries += ", " + entryMain;
-                        sendMessage(source, "config.grablist.addgrabentry.success");
-                        ConfigManager.save("Weather2 Remastered - Grab");
-                        return 1;
                     }
+                    if (ConfigGrab.grab_list_entries.isEmpty())
+                        ConfigGrab.grab_list_entries += entryMain;
+                    else
+                        ConfigGrab.grab_list_entries += ", " + entryMain;
+                    sendMessage(source, "config.grablist.addgrabentry.success");
+                    ConfigManager.save("Weather2 Remastered - Grab");
+                    return 1;
 
-                case "addreplaceentry":
-                    Item itemSecondary = player.getOffhandItem().getItem();
-                    Block blockSecondary = itemSecondary != Items.AIR ? Block.byItem(itemSecondary) : null;
-                    String entrySecondary = entry2 != null ? entry2 : (blockSecondary != null ? blockSecondary.getRegistryName().toString() : "");
+                case "addreplaceentry": {
+                    String entrySecondary = "";
+                    if (entry1 != null) {
+                        String[] parts = entry1.split("\\s+", 2);
+                        entryMain = parts[0];
+                        entrySecondary = parts.length > 1 ? parts[1] : "";
+                    } else {
+                        Item itemSecondary = player.getOffhandItem().getItem();
+                        Block blockSecondary = itemSecondary != Items.AIR ? Block.byItem(itemSecondary) : null;
+                        entrySecondary = blockSecondary != null ? blockSecondary.getRegistryName().toString() : "";
+                    }
 
                     if (entryMain.isEmpty() || entrySecondary.isEmpty()) {
                         sendMessage(source, "config.grablist.addreplaceentry.fail");
                         return 0;
-                    } else {
-                        if (ConfigGrab.replace_list_entries.isEmpty())
-                            ConfigGrab.replace_list_entries += entryMain + "=" + entrySecondary;
-                        else
-                            ConfigGrab.replace_list_entries += ", " + entryMain + "=" + entrySecondary;
-                        sendMessage(source, "config.grablist.addreplaceentry.success");
-                        ConfigManager.save("Weather2 Remastered - Grab");
-                        return 1;
                     }
+                    if (ConfigGrab.replace_list_entries.isEmpty())
+                        ConfigGrab.replace_list_entries += entryMain + "=" + entrySecondary;
+                    else
+                        ConfigGrab.replace_list_entries += ", " + entryMain + "=" + entrySecondary;
+                    sendMessage(source, "config.grablist.addreplaceentry.success");
+                    ConfigManager.save("Weather2 Remastered - Grab");
+                    return 1;
+                }
 
-                case "addwindentry":
-                    if (entryMain.isEmpty() || entry2 == null) {
+                case "addwindentry": {
+                    if (entry1 == null) {
                         sendMessage(source, "config.grablist.addwindentry.fail");
                         return 0;
-                    } else {
-                        String resistance = entry2.replaceAll("[^\\d\\.]", "");
-                        if (ConfigGrab.wind_resistance_entries.isEmpty())
-                            ConfigGrab.wind_resistance_entries += entryMain + "=" + resistance;
-                        else
-                            ConfigGrab.wind_resistance_entries += ", " + entryMain + "=" + resistance;
-                        sendMessage(source, "config.grablist.addwindentry.success");
-                        ConfigManager.save("Weather2 Remastered - Grab");
-                        return 1;
                     }
+                    String[] parts = entry1.split("\\s+", 2);
+                    entryMain = parts[0];
+                    if (entryMain.isEmpty() || parts.length < 2) {
+                        sendMessage(source, "config.grablist.addwindentry.fail");
+                        return 0;
+                    }
+                    String resistance = parts[1].replaceAll("[^\\d\\.]", "");
+                    if (resistance.isEmpty()) {
+                        sendMessage(source, "config.grablist.addwindentry.fail");
+                        return 0;
+                    }
+                    if (ConfigGrab.wind_resistance_entries.isEmpty())
+                        ConfigGrab.wind_resistance_entries += entryMain + "=" + resistance;
+                    else
+                        ConfigGrab.wind_resistance_entries += ", " + entryMain + "=" + resistance;
+                    sendMessage(source, "config.grablist.addwindentry.success");
+                    ConfigManager.save("Weather2 Remastered - Grab");
+                    return 1;
+                }
 
                 default:
                     return 0;
@@ -505,6 +522,8 @@ public class CommandWeather2 {
                         isHailing = true;
                         flagsStr += ", Storm Is Hailing";
                     }
+                    isRaining = false;
+                    flagsStr += ", No Rain";
                     break;
                 case "norain":
                     isRaining = false;
@@ -671,7 +690,7 @@ public class CommandWeather2 {
         }
 
         VolcanoObject vo = new VolcanoObject(wm);
-        vo.pos = new net.CoroUtil.util.Vec3(pos);
+        vo.pos = new net.corosus.coroutillegacy.util.Vec3(pos);
         vo.init();
         wm.addVolcanoObject(vo);
         PacketVolcanoObject.create(wm.getDimension(), vo);

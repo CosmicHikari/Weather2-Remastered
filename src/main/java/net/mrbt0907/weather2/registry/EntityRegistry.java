@@ -10,8 +10,7 @@ import net.mrbt0907.weather2.entity.EntityHail;
 import net.mrbt0907.weather2.entity.EntityLightningEX;
 import net.mrbt0907.weather2.entity.EntityMovingBlock;
 
-public class EntityRegistry
-{
+public class EntityRegistry {
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES, Weather2.MODID);
 
 

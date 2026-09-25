@@ -1,0 +1,33 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "key": "disable_pocket_sand",
+          "type": "weather2:config_enabled"
+        }
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": [
+          "DDD",
+          "DID",
+          "DDD"
+        ],
+        "key": {
+          "D": {
+            "item": "weather2:sand_layer_placeable"
+          },
+          "I": {
+            "item": "weather2:weather_item"
+          }
+        },
+        "result": {
+          "item": "weather2:pocket_sand",
+          "count": 8
+        }
+      }
+    }
+  ]
+}

@@ -12,18 +12,17 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public abstract class GuiBetterSlot
-{
+public abstract class GuiBetterSlot {
     public static final int scrollUpButtonID = 7;
     public static final int scrollDownButtonID = 8;
     public final Minecraft mc;
+    public final int slotHeight;
     public int width;
     public int height;
     public int top;
     public int bottom;
     public int right;
     public int left;
-    public final int slotHeight;
     public int mouseX;
     public int mouseY;
     public float initialClickY = -2.0F;
@@ -34,8 +33,7 @@ public abstract class GuiBetterSlot
 
     public ResourceLocation resBG = new ResourceLocation("/gui/background.png");
 
-    public GuiBetterSlot(Minecraft mc, int width, int height, int left, int top, int bottom, int slotHeight)
-    {
+    public GuiBetterSlot(Minecraft mc, int width, int height, int left, int top, int bottom, int slotHeight) {
         this.mc = mc;
         this.width = width + left;
         this.height = height;
@@ -47,21 +45,24 @@ public abstract class GuiBetterSlot
     }
 
     protected abstract int getSize();
+
     protected abstract void elementClicked(int i, boolean flag);
+
     protected abstract boolean isSelected(int i);
 
-    protected int getContentHeight()
-    {
+    protected int getContentHeight() {
         return getSize() * slotHeight;
     }
 
     protected abstract void drawBackground(Tessellator tessellator);
+
     protected abstract void drawForeground(Tessellator tessellator);
+
     protected abstract void drawSlotPre(int i, int j, int k, int l, Tessellator tessellator);
+
     protected abstract void drawSlotPost(int i, int j, int k, int l, Tessellator tessellator);
 
-    private void bindAmountScrolled()
-    {
+    private void bindAmountScrolled() {
         int i = func_77209_d();
 
         if (i < 0)
@@ -70,17 +71,15 @@ public abstract class GuiBetterSlot
         if (amountScrolled < 0.0F)
             amountScrolled = 0.0F;
 
-        if (amountScrolled > (float)i)
-            amountScrolled = (float)i;
+        if (amountScrolled > (float) i)
+            amountScrolled = (float) i;
     }
 
-    public int func_77209_d()
-    {
+    public int func_77209_d() {
         return getContentHeight() - (bottom - top - 4);
     }
 
-    public void drawScreen(MatrixStack matrixStack, int par1, int par2, float par3)
-    {
+    public void drawScreen(MatrixStack matrixStack, int par1, int par2, float par3) {
         mouseX = par1;
         mouseY = par2;
         int k = getSize();
@@ -101,10 +100,9 @@ public abstract class GuiBetterSlot
         BufferBuilder vertexbuffer = tessellator.getBuilder();
         drawBackground(tessellator);
         j1 = width / 2 - 16;
-        k1 = top + 4 - (int)amountScrolled;
+        k1 = top + 4 - (int) amountScrolled;
 
-        for (l1 = 0; l1 < k; ++l1)
-        {
+        for (l1 = 0; l1 < k; ++l1) {
             j2 = k1 + l1 * slotHeight;
             i2 = slotHeight - 4;
 
@@ -122,8 +120,7 @@ public abstract class GuiBetterSlot
         RenderSystem.disableTexture();
         j2 = func_77209_d();
 
-        if (j2 > 0)
-        {
+        if (j2 > 0) {
             i2 = (bottom - top) * (bottom - top) / getContentHeight();
 
             if (i2 < 32)
@@ -132,34 +129,33 @@ public abstract class GuiBetterSlot
             if (i2 > bottom - top - 8)
                 i2 = bottom - top - 8;
 
-            int i3 = (int)amountScrolled * (bottom - top - i2) / j2 + top;
+            int i3 = (int) amountScrolled * (bottom - top - i2) / j2 + top;
             if (i3 < top)
                 i3 = top;
 
             vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-            vertexbuffer.vertex((double)l, (double)bottom, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 100).endVertex();
-            vertexbuffer.vertex((double)i1, (double)bottom, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 100).endVertex();
-            vertexbuffer.vertex((double)i1, (double)top, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 100).endVertex();
-            vertexbuffer.vertex((double)l, (double)top, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 100).endVertex();
+            vertexbuffer.vertex(l, bottom, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 100).endVertex();
+            vertexbuffer.vertex(i1, bottom, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 100).endVertex();
+            vertexbuffer.vertex(i1, top, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 100).endVertex();
+            vertexbuffer.vertex(l, top, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 100).endVertex();
             tessellator.end();
 
             vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-            vertexbuffer.vertex((double)l, (double)(i3 + i2), 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-            vertexbuffer.vertex((double)i1, (double)(i3 + i2), 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-            vertexbuffer.vertex((double)i1, (double)i3, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 0).endVertex();
-            vertexbuffer.vertex((double)l, (double)i3, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 0).endVertex();
+            vertexbuffer.vertex(l, i3 + i2, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+            vertexbuffer.vertex(i1, i3 + i2, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+            vertexbuffer.vertex(i1, i3, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 0).endVertex();
+            vertexbuffer.vertex(l, i3, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 0).endVertex();
             tessellator.end();
 
             vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-            vertexbuffer.vertex((double)l, (double)(i3 + i2 - 1), 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-            vertexbuffer.vertex((double)(i1 - 1), (double)(i3 + i2 - 1), 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-            vertexbuffer.vertex((double)(i1 - 1), (double)i3, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-            vertexbuffer.vertex((double)l, (double)i3, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+            vertexbuffer.vertex(l, i3 + i2 - 1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+            vertexbuffer.vertex(i1 - 1, i3 + i2 - 1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+            vertexbuffer.vertex(i1 - 1, i3, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+            vertexbuffer.vertex(l, i3, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
             tessellator.end();
         }
 
-        for (l1 = 0; l1 < k; ++l1)
-        {
+        for (l1 = 0; l1 < k; ++l1) {
             j2 = k1 + l1 * slotHeight;
             i2 = slotHeight - 4;
 
@@ -173,8 +169,7 @@ public abstract class GuiBetterSlot
         RenderSystem.disableBlend();
     }
 
-    protected int getScrollBarX()
-    {
+    protected int getScrollBarX() {
         return width / 2 + 124;
     }
 }

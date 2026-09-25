@@ -1,116 +1,55 @@
-modLoader="javafml"
-loaderVersion="[36,)"
-license="All Rights Reserved"
-issueTrackerURL="http://Coros.us/"
+modLoader = "javafml"
+loaderVersion = "[36,)"
+license = "All Rights Reserved"
+issueTrackerURL = "http://Coros.us/"
 
 [[mods]]
-modId="weather2remaster"
-version="${mod_version}"
-displayName="Weather 2 - Remastered"
-authors="Corosus, Mrbt0907, Fartsy"
-credits="A huge thanks to Corosus for developing the Weather 2 mod for all of us to enjoy."
-description='''
+modId = "weather2remaster"
+version = "${mod_version}"
+displayName = "Weather 2 - Remastered"
+authors = "Corosus, Mrbt0907, Fartsy"
+credits = "A huge thanks to Corosus for developing the Weather 2 mod for all of us to enjoy."
+description = '''
 Brings a new localized weather system into your game, giving the environment around you more atmosphere while giving you storms to worry about.
 '''
 
 [[mods]]
-modId="coroutil"
-version="${mod_version}"
-displayName="CoroUtil"
-authors="Corosus"
-description='''
-Core utility library for Weather 2 and related mods.
+modId = "coroutillegacy"
+version = "${mod_version}"
+displayName = "CoroUtilLegacy"
+authors = "Corosus"
+description = '''
+Core utility library for Weather2 - Remastered
 '''
 
 [[mods]]
-modId="configex"
-version="${mod_version}"
-displayName="ConfigModEX"
-authors="Mrbt0907, Fartsy"
-description='''
+modId = "configex"
+version = "${mod_version}"
+displayName = "ConfigModEX"
+authors = "Mrbt0907, Fartsy"
+description = '''
 expanded Config'''
 
 [[mods]]
-modId="extendedrenderer"
-version="${mod_version}"
-displayName="Extended Renderer"
-authors="Corosus"
-description='''
+modId = "extendedrenderer"
+version = "${mod_version}"
+displayName = "Extended Renderer"
+authors = "Corosus"
+description = '''
 Extended rendering utilities.
 '''
 
-[[mods]]
-modId="configmod"
-version="${mod_version}"
-displayName="Config Mod"
-authors="Corosus"
-description='''
-Configuration utilities.
-'''
-
-# Dependencies for weather2
-[[dependencies.weather2]]
-modId="forge"
-mandatory=true
-versionRange="[36,)"
-ordering="NONE"
-side="BOTH"
-
-[[dependencies.weather2]]
-modId="minecraft"
-mandatory=true
-versionRange="[1.16.5]"
-ordering="NONE"
-side="BOTH"
-
-[[dependencies.weather2]]
-modId="coroutil"
-mandatory=true
-versionRange="[${mod_version}]"
-ordering="BEFORE"
-side="BOTH"
-
-# Dependencies for coroutil
-[[dependencies.coroutil]]
-modId="forge"
-mandatory=true
-versionRange="[36,)"
-ordering="NONE"
-side="BOTH"
-
-[[dependencies.coroutil]]
-modId="minecraft"
-mandatory=true
-versionRange="[1.16.5]"
-ordering="NONE"
-side="BOTH"
-
 # Dependencies for extendedrenderer
 [[dependencies.extendedrenderer]]
-modId="forge"
-mandatory=true
-versionRange="[36,)"
-ordering="NONE"
-side="BOTH"
+modId = "forge"
+mandatory = true
+versionRange = "[36.2.34,)"
+ordering = "NONE"
+side = "BOTH"
 
 [[dependencies.extendedrenderer]]
-modId="minecraft"
-mandatory=true
-versionRange="[1.16.5]"
-ordering="NONE"
-side="BOTH"
-
-# Dependencies for configmod
-[[dependencies.configmod]]
-modId="forge"
-mandatory=true
-versionRange="[36,)"
-ordering="NONE"
-side="BOTH"
-
-[[dependencies.configmod]]
-modId="minecraft"
-mandatory=true
-versionRange="[1.16.5]"
-ordering="NONE"
-side="BOTH"
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.16.5]"
+ordering = "NONE"
+side = "BOTH"

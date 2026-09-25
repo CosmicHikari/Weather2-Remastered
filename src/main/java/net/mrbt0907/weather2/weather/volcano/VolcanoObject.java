@@ -1,10 +1,11 @@
 package net.mrbt0907.weather2.weather.volcano;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-
+import net.corosus.coroutillegacy.util.CoroUtilBlock;
+import net.corosus.coroutillegacy.util.Vec3;
+import net.corosus.extendedrenderer.ExtendedRenderer;
+import net.corosus.extendedrenderer.particle.ParticleRegistry;
+import net.corosus.extendedrenderer.particle.behavior.ParticleBehaviors;
+import net.corosus.extendedrenderer.particle.entity.EntityRotFX;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -24,27 +25,22 @@ import net.mrbt0907.weather2.util.Maths;
 import net.mrbt0907.weather2.util.WeatherUtil;
 import net.mrbt0907.weather2.util.WeatherUtilBlock;
 import net.mrbt0907.weather2.weather.WeatherManager;
-import net.CoroUtil.util.CoroUtilBlock;
-import net.CoroUtil.util.Vec3;
-import net.extendedrenderer.ExtendedRenderer;
-import net.extendedrenderer.particle.ParticleRegistry;
-import net.extendedrenderer.particle.behavior.ParticleBehaviors;
-import net.extendedrenderer.particle.entity.EntityRotFX;
 
-public class VolcanoObject
-{
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
+public class VolcanoObject {
+
+    public static int staticYPos = 200;
     public UUID ID;
     public WeatherManager manager;
-
     @OnlyIn(Dist.CLIENT)
     public List<EntityRotFX> listParticlesSmoke = new ArrayList<EntityRotFX>();
     @OnlyIn(Dist.CLIENT)
     public ParticleBehaviors particleBehaviors;
-
     public int sizeMaxParticles = 300;
-
-    public static int staticYPos = 200;
     public Vec3 pos = new Vec3(0, staticYPos, 0);
 
     public int processRateDelay = 20;
@@ -62,17 +58,16 @@ public class VolcanoObject
 
     public int stepsBuildupMax = 20;
 
-    public int ticksToErupt = 20*30;
+    public int ticksToErupt = 20 * 30;
     public int ticksPerformedErupt = 0;
 
-    public int ticksToCooldown = 20*30;
+    public int ticksToCooldown = 20 * 30;
     public int ticksPerformedCooldown = 0;
 
 
     public int growthStage = 0;
 
-    public VolcanoObject(WeatherManager parManager)
-    {
+    public VolcanoObject(WeatherManager parManager) {
         manager = parManager;
         init();
     }
@@ -90,8 +85,7 @@ public class VolcanoObject
         ticksPerformedCooldown = 0;
     }
 
-    public void readFromNBT(CompoundNBT data)
-    {
+    public void readFromNBT(CompoundNBT data) {
         ID = data.getUUID("ID");
 
         pos = new Vec3(data.getInt("posX"), data.getInt("posY"), data.getInt("posZ"));
@@ -112,13 +106,12 @@ public class VolcanoObject
 
     }
 
-    public void writeToNBT(CompoundNBT data)
-    {
+    public void writeToNBT(CompoundNBT data) {
         data.putUUID("ID", ID);
 
-        data.putInt("posX", (int)pos.xCoord);
-        data.putInt("posY", (int)pos.yCoord);
-        data.putInt("posZ", (int)pos.zCoord);
+        data.putInt("posX", (int) pos.xCoord);
+        data.putInt("posY", (int) pos.yCoord);
+        data.putInt("posZ", (int) pos.zCoord);
 
         data.putInt("size", size);
         data.putInt("maxSize", maxSize);
@@ -149,9 +142,9 @@ public class VolcanoObject
     public CompoundNBT nbtSyncForClient() {
         CompoundNBT data = new CompoundNBT();
 
-        data.putInt("posX", (int)pos.xCoord);
-        data.putInt("posY", (int)pos.yCoord);
-        data.putInt("posZ", (int)pos.zCoord);
+        data.putInt("posX", (int) pos.xCoord);
+        data.putInt("posY", (int) pos.yCoord);
+        data.putInt("posZ", (int) pos.zCoord);
 
         data.putUUID("ID", ID);
         data.putInt("size", size);
@@ -181,14 +174,14 @@ public class VolcanoObject
                 pos.xCoord = Math.floor(pos.xCoord);
                 pos.zCoord = Math.floor(pos.zCoord);
 
-                pos.yCoord = WeatherUtilBlock.getPrecipitationHeightSafe(world, new BlockPos((int)pos.xCoord, 0, (int)pos.zCoord)).getY();
+                pos.yCoord = WeatherUtilBlock.getPrecipitationHeightSafe(world, new BlockPos((int) pos.xCoord, 0, (int) pos.zCoord)).getY();
                 startYPos = (int) pos.yCoord;
 
-                BlockState statez = world.getBlockState(new BlockPos(MathHelper.floor(pos.xCoord), MathHelper.floor(pos.yCoord-1), MathHelper.floor(pos.zCoord)));
+                BlockState statez = world.getBlockState(new BlockPos(MathHelper.floor(pos.xCoord), MathHelper.floor(pos.yCoord - 1), MathHelper.floor(pos.zCoord)));
                 topBlockID = statez.getBlock();
 
                 if (CoroUtilBlock.isAir(topBlockID) || !statez.getMaterial().isSolid()) {
-                    topBlockID = world.getBlockState(new BlockPos((int)pos.xCoord, (int)pos.yCoord-1, (int)pos.zCoord)).getBlock();
+                    topBlockID = world.getBlockState(new BlockPos((int) pos.xCoord, (int) pos.yCoord - 1, (int) pos.zCoord)).getBlock();
                 }
 
                 for (int yy = startYPos + curHeight; yy > 2; yy--) {
@@ -204,10 +197,10 @@ public class VolcanoObject
                         for (double angle = 0; angle <= 360; angle += res) {
 
                             Vec3 vec = new Vec3(vecX, 0, vecZ);
-                            vec.rotateAroundY((float)angle);
+                            vec.rotateAroundY((float) angle);
 
-                            int posX = (int)Math.floor((pos.xCoord)+vec.xCoord+0.5);
-                            int posZ = (int)Math.floor((pos.zCoord)+vec.zCoord+0.5);
+                            int posX = (int) Math.floor((pos.xCoord) + vec.xCoord + 0.5);
+                            int posZ = (int) Math.floor((pos.zCoord) + vec.zCoord + 0.5);
 
                             Block blockID = Blocks.OBSIDIAN;
 
@@ -252,10 +245,10 @@ public class VolcanoObject
                         for (double angle = 0; angle <= 360; angle += res) {
 
                             Vec3 vec = new Vec3(vecX, 0, vecZ);
-                            vec.rotateAroundY((float)angle);
+                            vec.rotateAroundY((float) angle);
 
-                            int posX = (int)Math.floor((pos.xCoord)+vec.xCoord+0.5);
-                            int posZ = (int)Math.floor((pos.zCoord)+vec.zCoord+0.5);
+                            int posX = (int) Math.floor((pos.xCoord) + vec.xCoord + 0.5);
+                            int posZ = (int) Math.floor((pos.zCoord) + vec.zCoord + 0.5);
 
                             Block blockID = topBlockID;
 
@@ -264,12 +257,12 @@ public class VolcanoObject
                             if (rand.nextInt(4) == 0) {
 
                                 if (yy != curHeight) {
-                                    if (CoroUtilBlock.isAir(world.getBlockState(new BlockPos(posX, startYPos+yy, posZ)).getBlock())) {
-                                        world.setBlockAndUpdate(new BlockPos(posX, startYPos+yy, posZ), blockID.defaultBlockState());
+                                    if (CoroUtilBlock.isAir(world.getBlockState(new BlockPos(posX, startYPos + yy, posZ)).getBlock())) {
+                                        world.setBlockAndUpdate(new BlockPos(posX, startYPos + yy, posZ), blockID.defaultBlockState());
                                     }
                                 }
 
-                                int underY = startYPos+yy-1;
+                                int underY = startYPos + yy - 1;
                                 Block underBlockID = world.getBlockState(new BlockPos(posX, underY, posZ)).getBlock();
                                 while ((CoroUtilBlock.isAir(underBlockID) || underBlockID.defaultBlockState().getMaterial() == Material.WATER) && underY > 1) {
                                     world.setBlockAndUpdate(new BlockPos(posX, underY, posZ), Blocks.DIRT.defaultBlockState());
@@ -288,15 +281,15 @@ public class VolcanoObject
                 if (this.manager.getWorld().getGameTime() % processRateDelay == 0) {
 
                     if (step <= maxSize) {
-                        int posX = (int)Math.floor((pos.xCoord));
-                        int posY = (int)Math.floor((startYPos)) + step;
-                        int posZ = (int)Math.floor((pos.zCoord));
+                        int posX = (int) Math.floor((pos.xCoord));
+                        int posY = (int) Math.floor((startYPos)) + step;
+                        int posZ = (int) Math.floor((pos.zCoord));
 
                         world.setBlockAndUpdate(new BlockPos(posX, posY, posZ), Blocks.LAVA.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX+1, posY, posZ), Blocks.LAVA.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX-1, posY, posZ), Blocks.LAVA.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX, posY, posZ+1), Blocks.LAVA.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX, posY, posZ-1), Blocks.LAVA.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX + 1, posY, posZ), Blocks.LAVA.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX - 1, posY, posZ), Blocks.LAVA.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX, posY, posZ + 1), Blocks.LAVA.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX, posY, posZ - 1), Blocks.LAVA.defaultBlockState());
                     } else {
                         step = 0;
                         state++;
@@ -319,27 +312,26 @@ public class VolcanoObject
             } else if (state == 4) {
 
 
-
                 if (ticksPerformedErupt == 0) {
 
                     Weather2.debug("volcano " + ID + " is erupting");
 
                     for (int i = 0; i < 3; i++) {
-                        int posX = (int)Math.floor((pos.xCoord));
-                        int posY = (int)Math.floor((startYPos)) + maxSize + i;
-                        int posZ = (int)Math.floor((pos.zCoord));
+                        int posX = (int) Math.floor((pos.xCoord));
+                        int posY = (int) Math.floor((startYPos)) + maxSize + i;
+                        int posZ = (int) Math.floor((pos.zCoord));
 
                         Block blockID = Blocks.LAVA;
 
                         world.setBlockAndUpdate(new BlockPos(posX, posY, posZ), blockID.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX+1, posY, posZ), blockID.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX-1, posY, posZ), blockID.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX, posY, posZ+1), blockID.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX, posY, posZ-1), blockID.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX+1, posY, posZ+1), blockID.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX-1, posY, posZ-1), blockID.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX-1, posY, posZ+1), blockID.defaultBlockState());
-                        world.setBlockAndUpdate(new BlockPos(posX+1, posY, posZ-1), blockID.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX + 1, posY, posZ), blockID.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX - 1, posY, posZ), blockID.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX, posY, posZ + 1), blockID.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX, posY, posZ - 1), blockID.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX + 1, posY, posZ + 1), blockID.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX - 1, posY, posZ - 1), blockID.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX - 1, posY, posZ + 1), blockID.defaultBlockState());
+                        world.setBlockAndUpdate(new BlockPos(posX + 1, posY, posZ - 1), blockID.defaultBlockState());
                     }
                 }
 
@@ -355,21 +347,21 @@ public class VolcanoObject
                 }
 
                 if (ticksPerformedCooldown % processRateDelay == 0) {
-                    int posX = (int)Math.floor((pos.xCoord));
-                    int posY = (int)Math.floor((startYPos)) + maxSize - step + 2;
-                    int posZ = (int)Math.floor((pos.zCoord));
+                    int posX = (int) Math.floor((pos.xCoord));
+                    int posY = (int) Math.floor((startYPos)) + maxSize - step + 2;
+                    int posZ = (int) Math.floor((pos.zCoord));
 
                     Block blockID = Blocks.STONE;
 
                     world.setBlockAndUpdate(new BlockPos(posX, posY, posZ), blockID.defaultBlockState());
-                    world.setBlockAndUpdate(new BlockPos(posX+1, posY, posZ), blockID.defaultBlockState());
-                    world.setBlockAndUpdate(new BlockPos(posX-1, posY, posZ), blockID.defaultBlockState());
-                    world.setBlockAndUpdate(new BlockPos(posX, posY, posZ+1), blockID.defaultBlockState());
-                    world.setBlockAndUpdate(new BlockPos(posX, posY, posZ-1), blockID.defaultBlockState());
-                    world.setBlockAndUpdate(new BlockPos(posX+1, posY, posZ+1), blockID.defaultBlockState());
-                    world.setBlockAndUpdate(new BlockPos(posX-1, posY, posZ-1), blockID.defaultBlockState());
-                    world.setBlockAndUpdate(new BlockPos(posX-1, posY, posZ+1), blockID.defaultBlockState());
-                    world.setBlockAndUpdate(new BlockPos(posX+1, posY, posZ-1), blockID.defaultBlockState());
+                    world.setBlockAndUpdate(new BlockPos(posX + 1, posY, posZ), blockID.defaultBlockState());
+                    world.setBlockAndUpdate(new BlockPos(posX - 1, posY, posZ), blockID.defaultBlockState());
+                    world.setBlockAndUpdate(new BlockPos(posX, posY, posZ + 1), blockID.defaultBlockState());
+                    world.setBlockAndUpdate(new BlockPos(posX, posY, posZ - 1), blockID.defaultBlockState());
+                    world.setBlockAndUpdate(new BlockPos(posX + 1, posY, posZ + 1), blockID.defaultBlockState());
+                    world.setBlockAndUpdate(new BlockPos(posX - 1, posY, posZ - 1), blockID.defaultBlockState());
+                    world.setBlockAndUpdate(new BlockPos(posX - 1, posY, posZ + 1), blockID.defaultBlockState());
+                    world.setBlockAndUpdate(new BlockPos(posX + 1, posY, posZ - 1), blockID.defaultBlockState());
 
                     step++;
                 }
@@ -409,8 +401,8 @@ public class VolcanoObject
         if (this.manager.getWorld().getGameTime() % delay == 0) {
             for (int i = 0; i < loopSize; i++) {
                 if (listParticlesSmoke.size() < 500) {
-                    double spawnRad = size/48;
-                    EntityRotFX particle = spawnSmokeParticle(pos.xCoord + (rand.nextDouble()*spawnRad) - (rand.nextDouble()*spawnRad), pos.yCoord + size + 2, pos.zCoord + (rand.nextDouble()*spawnRad) - (rand.nextDouble()*spawnRad));
+                    double spawnRad = size / 48;
+                    EntityRotFX particle = spawnSmokeParticle(pos.xCoord + (rand.nextDouble() * spawnRad) - (rand.nextDouble() * spawnRad), pos.yCoord + size + 2, pos.zCoord + (rand.nextDouble() * spawnRad) - (rand.nextDouble() * spawnRad));
                     listParticlesSmoke.add(particle);
                 }
             }
@@ -431,7 +423,7 @@ public class VolcanoObject
                 double vecX = ent.getPosX() - pos.xCoord;
                 double vecZ = ent.getPosZ() - pos.zCoord;
                 @SuppressWarnings("unused")
-                float angle = (float)(Maths.fastATan2(vecZ, vecX) * 180.0D / Math.PI);
+                float angle = (float) (Maths.fastATan2(vecZ, vecX) * 180.0D / Math.PI);
                 angle += 50;
 
                 angle -= (ent.getEntityId() % 10) * 3D;
@@ -463,7 +455,7 @@ public class VolcanoObject
 
         float randFloat = (rand.nextFloat() * 0.6F);
         float baseBright = 0.1F;
-        float finalBright = Math.min(1F, baseBright+randFloat);
+        float finalBright = Math.min(1F, baseBright + randFloat);
         entityfx.setColor(finalBright, finalBright, finalBright);
 
         ExtendedRenderer.rotEffRenderer.addEffect(entityfx);
@@ -479,8 +471,7 @@ public class VolcanoObject
         Weather2.debug("volcano... killed? NO ONE KILLS A VOLCANO!");
     }
 
-    public UUID getUUID()
-    {
+    public UUID getUUID() {
         return ID;
     }
 }

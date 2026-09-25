@@ -8,9 +8,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.item.*;
 
-public class ItemRegistry
-{
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Weather2.MODID);
+public class ItemRegistry {
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Weather2.OLD_MODID);
 
 
     public static final RegistryObject<Item> radar = ITEMS.register("handheld_radar",
@@ -62,21 +61,18 @@ public class ItemRegistry
     public static final RegistryObject<Item> itemPocketSand = ITEMS.register("pocket_sand",
             () -> new ItemPocketSand(defaultProperties()));
 
-    
-    private static Item.Properties defaultProperties()
-    {
+
+    private static Item.Properties defaultProperties() {
         return new Item.Properties().tab(Weather2.TAB);
     }
 
-    
-    public static RegistryObject<Item> registerBlockItem(String name, RegistryObject<? extends net.minecraft.block.Block> block)
-    {
+
+    public static RegistryObject<Item> registerBlockItem(String name, RegistryObject<? extends net.minecraft.block.Block> block) {
         return ITEMS.register(name, () -> new BlockItem(block.get(), defaultProperties()));
     }
 
-    
-    public static RegistryObject<Item> registerBlockItem(String name, RegistryObject<? extends net.minecraft.block.Block> block, Item.Properties properties)
-    {
+
+    public static RegistryObject<Item> registerBlockItem(String name, RegistryObject<? extends net.minecraft.block.Block> block, Item.Properties properties) {
         return ITEMS.register(name, () -> new BlockItem(block.get(), properties));
     }
 }

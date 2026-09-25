@@ -25,7 +25,7 @@ public class EZGuiAPI {
     public static final String BA_EFFECT = "a_effect";
     public static final String BA_EF = "a_ef";
     public static final String BA_SHADER = "a_shader";
-    public static final String BA_VANILLAFOG = "a_vanillafog";
+    public static final String BA_CUSTOMFOG = "a_customfog";
     public static final String BA_FOLIAGE = "a_foliage";
     public static final String BA_RENDER_DISTANCE = "a_render_distance";
     public static final String BA_FANCY_RENDERING = "a_fancy_rendering";
@@ -61,7 +61,7 @@ public class EZGuiAPI {
         options.put(BA_EFFECT, BL_STR_ALT, 3);
         options.put(BA_EF, BL_TOGGLE, 0);
         options.put(BA_SHADER, BL_SHADERS, 0);
-        options.put(BA_VANILLAFOG, BL_TOGGLE, 1);
+        options.put(BA_CUSTOMFOG, BL_TOGGLE, 1);
         options.put(BA_FOLIAGE, BL_TOGGLE, 0);
         options.put(BA_RENDER_DISTANCE, BL_STR_ALT, 4);
         options.put(BA_FANCY_RENDERING, BL_TOGGLE, 0);

@@ -2,15 +2,12 @@ package net.mrbt0907.weather2.event;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.extendedrenderer.render.FoliageRenderer;
-import net.minecraft.entity.CreatureEntity;
+import net.corosus.extendedrenderer.render.FoliageRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
-import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.event.TickEvent;
@@ -22,12 +19,9 @@ import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.api.WeatherAPI;
 import net.mrbt0907.weather2.api.WeatherUtilData;
 import net.mrbt0907.weather2.api.event.EventRegisterGrabLists;
-import net.mrbt0907.weather2.api.event.EventRegisterParticleRenderer;
 import net.mrbt0907.weather2.client.NewSceneEnhancer;
 import net.mrbt0907.weather2.client.event.ClientTickHandler;
 import net.mrbt0907.weather2.client.foliage.FoliageEnhancerShader;
-import net.mrbt0907.weather2.client.rendering.April24StormRenderer;
-import net.mrbt0907.weather2.client.rendering.LegacyStormRenderer;
 import net.mrbt0907.weather2.config.ConfigClient;
 import net.mrbt0907.weather2.config.ConfigFoliage;
 import net.mrbt0907.weather2.config.ConfigMisc;
@@ -37,15 +31,9 @@ import net.mrbt0907.weather2.util.WeatherUtilEntity;
 import net.mrbt0907.weather2.weather.WindManager;
 
 public class EventHandlerForge {
-    @SubscribeEvent
-    public void onParticleRendererRegister(EventRegisterParticleRenderer event) {
-        event.register(new ResourceLocation(Weather2.MODID, "legacy"), LegacyStormRenderer.class);
-        event.register(new ResourceLocation(Weather2.MODID, "april24"), April24StormRenderer.class);
-    }
 
     @SubscribeEvent
     public void onGrabListRefresh(EventRegisterGrabLists event) {
-
         event.windResistanceList.add("minecraft:acacia_door", WeatherAPI.getEFWindSpeed(1));
         event.windResistanceList.add("minecraft:birch_door", WeatherAPI.getEFWindSpeed(1));
         event.windResistanceList.add("minecraft:dark_oak_door", WeatherAPI.getEFWindSpeed(1));
@@ -172,14 +160,122 @@ public class EventHandlerForge {
         event.windResistanceList.add("minecraft:jungle_trapdoor", WeatherAPI.getEFWindSpeed(2));
         event.windResistanceList.add("minecraft:acacia_trapdoor", WeatherAPI.getEFWindSpeed(2));
         event.windResistanceList.add("minecraft:dark_oak_trapdoor", WeatherAPI.getEFWindSpeed(2));
+
         event.windResistanceList.add("minecraft:oak_button", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:spruce_button", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:birch_button", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:jungle_button", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:acacia_button", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:dark_oak_button", WeatherAPI.getEFWindSpeed(1));
+
         event.windResistanceList.add("minecraft:oak_pressure_plate", WeatherAPI.getEFWindSpeed(1));
         event.windResistanceList.add("minecraft:spruce_pressure_plate", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:birch_pressure_plate", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:jungle_pressure_plate", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:acacia_pressure_plate", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:dark_oak_pressure_plate", WeatherAPI.getEFWindSpeed(1));
         event.windResistanceList.add("minecraft:heavy_weighted_pressure_plate", WeatherAPI.getEFWindSpeed(1));
         event.windResistanceList.add("minecraft:light_weighted_pressure_plate", WeatherAPI.getEFWindSpeed(1));
 
         event.windResistanceList.add("minecraft:oak_sign", WeatherAPI.getEFWindSpeed(1));
         event.windResistanceList.add("minecraft:oak_wall_sign", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:spruce_sign", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:spruce_wall_sign", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:birch_sign", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:birch_wall_sign", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:jungle_sign", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:jungle_wall_sign", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:acacia_sign", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:acacia_wall_sign", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:dark_oak_sign", WeatherAPI.getEFWindSpeed(1));
+        event.windResistanceList.add("minecraft:dark_oak_wall_sign", WeatherAPI.getEFWindSpeed(1));
+
+        event.windResistanceList.add("minecraft:white_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:orange_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:magenta_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:light_blue_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:yellow_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:lime_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:pink_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:gray_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:light_gray_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:cyan_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:purple_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:blue_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:brown_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:green_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:red_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:black_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:white_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:orange_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:magenta_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:light_blue_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:yellow_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:lime_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:pink_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:gray_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:light_gray_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:cyan_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:purple_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:blue_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:brown_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:green_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:red_wall_banner", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:black_wall_banner", WeatherAPI.getEFWindSpeed(0));
+
+        event.windResistanceList.add("minecraft:white_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:orange_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:magenta_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:light_blue_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:yellow_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:lime_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:pink_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:gray_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:light_gray_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:cyan_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:purple_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:blue_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:brown_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:green_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:red_bed", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:black_bed", WeatherAPI.getEFWindSpeed(0));
+
+        event.windResistanceList.add("minecraft:cake", WeatherAPI.getEFWindSpeed(0));
+
+        event.windResistanceList.add("minecraft:skeleton_skull", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:skeleton_wall_skull", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:wither_skeleton_skull", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:wither_skeleton_wall_skull", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:zombie_head", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:zombie_wall_head", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:player_head", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:player_wall_head", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:creeper_head", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:creeper_wall_head", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:dragon_head", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:dragon_wall_head", WeatherAPI.getEFWindSpeed(0));
+
+        event.windResistanceList.add("minecraft:grass", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:fern", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:sunflower", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:lilac", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:tall_grass", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:large_fern", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:rose_bush", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:peony", WeatherAPI.getEFWindSpeed(0));
+
+        event.windResistanceList.add("minecraft:poppy", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:blue_orchid", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:allium", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:azure_bluet", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:red_tulip", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:orange_tulip", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:white_tulip", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:pink_tulip", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:oxeye_daisy", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:cornflower", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:lily_of_the_valley", WeatherAPI.getEFWindSpeed(0));
+        event.windResistanceList.add("minecraft:wither_rose", WeatherAPI.getEFWindSpeed(0));
 
         event.windResistanceList.add("minecraft:dirt", WeatherAPI.getEFWindSpeed(4));
         event.windResistanceList.add("minecraft:farmland", WeatherAPI.getEFWindSpeed(0));
@@ -369,7 +465,6 @@ public class EventHandlerForge {
         event.windResistanceList.add("minecraft:flower_pot", WeatherAPI.getEFWindSpeed(0));
         event.windResistanceList.add("minecraft:furnace", WeatherAPI.getEFWindSpeed(0));
         event.windResistanceList.add("minecraft:glowstone", WeatherAPI.getEFWindSpeed(1));
-        event.windResistanceList.add("minecraft:grass", WeatherAPI.getEFWindSpeed(0));
         event.windResistanceList.add("minecraft:hay_block", WeatherAPI.getEFWindSpeed(0));
         event.windResistanceList.add("minecraft:hopper", WeatherAPI.getEFWindSpeed(1));
         event.windResistanceList.add("minecraft:ice", WeatherAPI.getEFWindSpeed(0));
@@ -394,7 +489,6 @@ public class EventHandlerForge {
         event.windResistanceList.add("minecraft:redstone_lamp", WeatherAPI.getEFWindSpeed(2));
         event.windResistanceList.add("minecraft:redstone_torch", WeatherAPI.getEFWindSpeed(0));
         event.windResistanceList.add("minecraft:repeater", WeatherAPI.getEFWindSpeed(0));
-        event.windResistanceList.add("minecraft:skeleton_skull", WeatherAPI.getEFWindSpeed(0));
         event.windResistanceList.add("minecraft:slime_block", WeatherAPI.getEFWindSpeed(1));
         event.windResistanceList.add("minecraft:snow", WeatherAPI.getEFWindSpeed(1));
         event.windResistanceList.add("minecraft:snow_block", WeatherAPI.getEFWindSpeed(1));
@@ -446,6 +540,7 @@ public class EventHandlerForge {
         event.grabList.add("minecraft:brick_stairs");
         event.grabList.add("minecraft:brown_mushroom_block");
         event.grabList.add("minecraft:cactus");
+        event.grabList.add("minecraft:cake");
         event.grabList.add("minecraft:cauldron");
         event.grabList.add("minecraft:chest");
         event.grabList.add("minecraft:chorus_flower");
@@ -535,7 +630,6 @@ public class EventHandlerForge {
         event.grabList.add("minecraft:sandstone");
         event.grabList.add("minecraft:sandstone_stairs");
         event.grabList.add("minecraft:sea_lantern");
-        event.grabList.add("minecraft:skeleton_skull");
         event.grabList.add("minecraft:slime_block");
         event.grabList.add("minecraft:soul_sand");
         event.grabList.add("minecraft:sponge");
@@ -552,7 +646,6 @@ public class EventHandlerForge {
         event.grabList.add("minecraft:stone_stairs");
         event.grabList.add("minecraft:terracotta");
         event.grabList.add("minecraft:tnt");
-        event.grabList.add("minecraft:oak_trapdoor");
         event.grabList.add("minecraft:trapped_chest");
         event.grabList.add("minecraft:tripwire_hook");
 
@@ -576,6 +669,103 @@ public class EventHandlerForge {
         event.grabList.add("minecraft:jungle_leaves");
         event.grabList.add("minecraft:acacia_leaves");
         event.grabList.add("minecraft:dark_oak_leaves");
+
+        event.grabList.add("minecraft:oak_trapdoor");
+        event.grabList.add("minecraft:spruce_trapdoor");
+        event.grabList.add("minecraft:birch_trapdoor");
+        event.grabList.add("minecraft:jungle_trapdoor");
+        event.grabList.add("minecraft:acacia_trapdoor");
+        event.grabList.add("minecraft:dark_oak_trapdoor");
+
+        event.grabList.add("minecraft:oak_button");
+        event.grabList.add("minecraft:spruce_button");
+        event.grabList.add("minecraft:birch_button");
+        event.grabList.add("minecraft:jungle_button");
+        event.grabList.add("minecraft:acacia_button");
+        event.grabList.add("minecraft:dark_oak_button");
+
+        event.grabList.add("minecraft:oak_pressure_plate");
+        event.grabList.add("minecraft:spruce_pressure_plate");
+        event.grabList.add("minecraft:birch_pressure_plate");
+        event.grabList.add("minecraft:jungle_pressure_plate");
+        event.grabList.add("minecraft:acacia_pressure_plate");
+        event.grabList.add("minecraft:dark_oak_pressure_plate");
+
+        event.grabList.add("minecraft:oak_sign");
+        event.grabList.add("minecraft:oak_wall_sign");
+        event.grabList.add("minecraft:spruce_sign");
+        event.grabList.add("minecraft:spruce_wall_sign");
+        event.grabList.add("minecraft:birch_sign");
+        event.grabList.add("minecraft:birch_wall_sign");
+        event.grabList.add("minecraft:jungle_sign");
+        event.grabList.add("minecraft:jungle_wall_sign");
+        event.grabList.add("minecraft:acacia_sign");
+        event.grabList.add("minecraft:acacia_wall_sign");
+        event.grabList.add("minecraft:dark_oak_sign");
+        event.grabList.add("minecraft:dark_oak_wall_sign");
+
+        event.grabList.add("minecraft:white_banner");
+        event.grabList.add("minecraft:orange_banner");
+        event.grabList.add("minecraft:magenta_banner");
+        event.grabList.add("minecraft:light_blue_banner");
+        event.grabList.add("minecraft:yellow_banner");
+        event.grabList.add("minecraft:lime_banner");
+        event.grabList.add("minecraft:pink_banner");
+        event.grabList.add("minecraft:gray_banner");
+        event.grabList.add("minecraft:light_gray_banner");
+        event.grabList.add("minecraft:cyan_banner");
+        event.grabList.add("minecraft:purple_banner");
+        event.grabList.add("minecraft:blue_banner");
+        event.grabList.add("minecraft:brown_banner");
+        event.grabList.add("minecraft:green_banner");
+        event.grabList.add("minecraft:red_banner");
+        event.grabList.add("minecraft:black_banner");
+        event.grabList.add("minecraft:white_wall_banner");
+        event.grabList.add("minecraft:orange_wall_banner");
+        event.grabList.add("minecraft:magenta_wall_banner");
+        event.grabList.add("minecraft:light_blue_wall_banner");
+        event.grabList.add("minecraft:yellow_wall_banner");
+        event.grabList.add("minecraft:lime_wall_banner");
+        event.grabList.add("minecraft:pink_wall_banner");
+        event.grabList.add("minecraft:gray_wall_banner");
+        event.grabList.add("minecraft:light_gray_wall_banner");
+        event.grabList.add("minecraft:cyan_wall_banner");
+        event.grabList.add("minecraft:purple_wall_banner");
+        event.grabList.add("minecraft:blue_wall_banner");
+        event.grabList.add("minecraft:brown_wall_banner");
+        event.grabList.add("minecraft:green_wall_banner");
+        event.grabList.add("minecraft:red_wall_banner");
+        event.grabList.add("minecraft:black_wall_banner");
+
+        event.grabList.add("minecraft:white_bed");
+        event.grabList.add("minecraft:orange_bed");
+        event.grabList.add("minecraft:magenta_bed");
+        event.grabList.add("minecraft:light_blue_bed");
+        event.grabList.add("minecraft:yellow_bed");
+        event.grabList.add("minecraft:lime_bed");
+        event.grabList.add("minecraft:pink_bed");
+        event.grabList.add("minecraft:gray_bed");
+        event.grabList.add("minecraft:light_gray_bed");
+        event.grabList.add("minecraft:cyan_bed");
+        event.grabList.add("minecraft:purple_bed");
+        event.grabList.add("minecraft:blue_bed");
+        event.grabList.add("minecraft:brown_bed");
+        event.grabList.add("minecraft:green_bed");
+        event.grabList.add("minecraft:red_bed");
+        event.grabList.add("minecraft:black_bed");
+
+        event.grabList.add("minecraft:skeleton_skull");
+        event.grabList.add("minecraft:skeleton_wall_skull");
+        event.grabList.add("minecraft:wither_skeleton_skull");
+        event.grabList.add("minecraft:wither_skeleton_wall_skull");
+        event.grabList.add("minecraft:zombie_head");
+        event.grabList.add("minecraft:zombie_wall_head");
+        event.grabList.add("minecraft:player_head");
+        event.grabList.add("minecraft:player_wall_head");
+        event.grabList.add("minecraft:creeper_head");
+        event.grabList.add("minecraft:creeper_wall_head");
+        event.grabList.add("minecraft:dragon_head");
+        event.grabList.add("minecraft:dragon_wall_head");
 
         event.grabList.add("minecraft:black_glazed_terracotta");
         event.grabList.add("minecraft:blue_glazed_terracotta");
@@ -746,8 +936,17 @@ public class EventHandlerForge {
         event.replaceList.add("minecraft:lily_pad", "minecraft:air");
         event.replaceList.add("minecraft:cobweb", "minecraft:air");
         event.replaceList.add("minecraft:oak_button", "minecraft:air");
+        event.replaceList.add("minecraft:spruce_button", "minecraft:air");
+        event.replaceList.add("minecraft:birch_button", "minecraft:air");
+        event.replaceList.add("minecraft:jungle_button", "minecraft:air");
+        event.replaceList.add("minecraft:acacia_button", "minecraft:air");
+        event.replaceList.add("minecraft:dark_oak_button", "minecraft:air");
         event.replaceList.add("minecraft:oak_pressure_plate", "minecraft:air");
         event.replaceList.add("minecraft:spruce_pressure_plate", "minecraft:air");
+        event.replaceList.add("minecraft:birch_pressure_plate", "minecraft:air");
+        event.replaceList.add("minecraft:jungle_pressure_plate", "minecraft:air");
+        event.replaceList.add("minecraft:acacia_pressure_plate", "minecraft:air");
+        event.replaceList.add("minecraft:dark_oak_pressure_plate", "minecraft:air");
     }
 
     @SubscribeEvent
@@ -800,7 +999,7 @@ public class EventHandlerForge {
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public void onFogRender(EntityViewRenderEvent.RenderFogEvent event) {
-        if (ConfigMisc.toaster_pc_mode || !ConfigClient.enable_vanilla_fog) return;
+        if (ConfigMisc.toaster_pc_mode || !ConfigClient.enable_custom_fog) return;
         NewSceneEnhancer scene = NewSceneEnhancer.instance();
         RenderSystem.fogMode(GlStateManager.FogMode.EXP);
         RenderSystem.fogStart(0.0F);
@@ -819,11 +1018,11 @@ public class EventHandlerForge {
         Entity entity = event.getEntity();
         if (entity.level.isClientSide) return;
 
-        if (ConfigStorm.enable_villagers_take_cover && entity instanceof CreatureEntity) {
-            CreatureEntity creature = (CreatureEntity) entity;
-            if (!WeatherUtilEntity.hasAITask(creature, EntityAITakeCover.class)
-                    && WeatherUtilEntity.hasAITask(creature, MoveThroughVillageGoal.class))
-                creature.goalSelector.addGoal(1, new EntityAITakeCover(creature));
+        if (ConfigStorm.enable_villagers_take_cover && entity instanceof VillagerEntity) {
+            VillagerEntity villager = (VillagerEntity) entity;
+            if (!WeatherUtilEntity.hasAITask(villager, EntityAITakeCover.class)) {
+                villager.goalSelector.addGoal(2, new EntityAITakeCover(villager));
+            }
         }
     }
 
@@ -833,11 +1032,6 @@ public class EventHandlerForge {
         FoliageEnhancerShader.setupReplacers();
     }
 
-    @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
-    public void modelBake(ModelBakeEvent event) {
-        FoliageEnhancerShader.modelBakeEvent(event);
-    }
 
     @SubscribeEvent
     public void onEntityLivingUpdate(LivingEvent.LivingUpdateEvent event) {

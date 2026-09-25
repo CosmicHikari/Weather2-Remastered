@@ -1,0 +1,44 @@
+{
+  "advancements": [
+    {
+      "conditions": [
+        {
+          "key": "disable_siren",
+          "type": "weather2:config_enabled"
+        }
+      ],
+      "advancement": {
+        "parent": "minecraft:recipes/root",
+        "rewards": {
+          "recipes": [
+            "weather2:tornado_siren"
+          ]
+        },
+        "criteria": {
+          "has_tornado_sensor": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+              "items": [
+                {
+                  "item": "weather2:tornado_sensor"
+                }
+              ]
+            }
+          },
+          "has_the_recipe": {
+            "trigger": "minecraft:recipe_unlocked",
+            "conditions": {
+              "recipe": "weather2:tornado_siren"
+            }
+          }
+        },
+        "requirements": [
+          [
+            "has_tornado_sensor",
+            "has_the_recipe"
+          ]
+        ]
+      }
+    }
+  ]
+}

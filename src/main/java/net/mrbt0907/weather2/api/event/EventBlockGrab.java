@@ -8,7 +8,7 @@ import net.minecraftforge.eventbus.api.Event;
 public class EventBlockGrab extends Event {
     private final BlockState state;
 
-    
+
     public EventBlockGrab(BlockState state) {
         this.state = state;
     }

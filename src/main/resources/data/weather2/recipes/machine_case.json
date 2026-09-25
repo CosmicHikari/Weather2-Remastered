@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ABA",
+    "BCB",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "tag": "forge:ingots/iron"
+    },
+    "B": {
+      "item": "minecraft:glass"
+    },
+    "C": {
+      "tag": "forge:ingots/gold"
+    }
+  },
+  "result": {
+    "item": "weather2:machine_case"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "advancements": [
+    {
+      "conditions": [
+        {
+          "key": "disable_weather_radar",
+          "type": "weather2:config_enabled"
+        }
+      ],
+      "advancement": {
+        "parent": "minecraft:recipes/root",
+        "rewards": {
+          "recipes": [
+            "weather2:weather_forecast_2"
+          ]
+        },
+        "criteria": {
+          "has_weather_radar": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+              "items": [
+                {
+                  "item": "weather2:weather_forecast"
+                }
+              ]
+            }
+          },
+          "has_the_recipe": {
+            "trigger": "minecraft:recipe_unlocked",
+            "conditions": {
+              "recipe": "weather2:weather_forecast_2"
+            }
+          }
+        },
+        "requirements": [
+          [
+            "has_weather_radar",
+            "has_the_recipe"
+          ]
+        ]
+      }
+    }
+  ]
+}

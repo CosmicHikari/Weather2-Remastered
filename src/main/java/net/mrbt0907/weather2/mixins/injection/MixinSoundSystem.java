@@ -6,19 +6,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(SoundSystem.class)
-public class MixinSoundSystem
-{
+public class MixinSoundSystem {
     @ModifyArg(
-        method = "init()V",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/audio/SoundSystem$HandlerImpl;<init>(I)V",
-            ordinal = 1
-        ),
-        index = 0
+            method = "init()V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/audio/SoundSystem$HandlerImpl;<init>(I)V",
+                    ordinal = 1
+            ),
+            index = 0
     )
-    private int increaseStreamingChannels(int original)
-    {
+    private int increaseStreamingChannels(int original) {
         return 32;
     }
 }

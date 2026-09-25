@@ -1,11 +1,10 @@
 package net.mrbt0907.weather2.util;
 
-import net.CoroUtil.api.weather.IWindHandler;
-import net.CoroUtil.util.CoroUtilEntOrParticle;
-import net.extendedrenderer.particle.entity.EntityRotFX;
+import net.corosus.coroutillegacy.api.weather.IWindHandler;
+import net.corosus.coroutillegacy.util.CoroUtilEntOrParticle;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.CreatureEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.PrioritizedGoal;
@@ -17,11 +16,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
@@ -33,66 +28,49 @@ import net.mrbt0907.weather2.mixins.accessor.GoalSelectorAccessor;
 import net.mrbt0907.weather2.util.Maths.Vec3;
 import net.mrbt0907.weather2.weather.WindManager;
 
+
 public class WeatherUtilEntity {
 
-    public static int playerInAirTime = 0;
+    private WeatherUtilEntity() {
+    }
 
-    
-    public static float getWeight(Object obj)
-    {
+    public static float getWeight(Object obj) {
         World world = CoroUtilEntOrParticle.getWorld(obj);
         if (world == null)
             return -1.0F;
 
         if (obj instanceof IWindHandler)
             return ((IWindHandler) obj).getWindWeight();
-        else if (world.isClientSide && obj instanceof Particle)
-            return WeatherUtilParticle.getParticleWeight((Particle) obj);
-        else if (obj instanceof EntityMovingBlock)
-        {
+
+        if (world.isClientSide && obj instanceof Particle)
+            return WeatherUtilEntityClient.getParticleWeight(obj);
+
+        if (obj instanceof EntityMovingBlock) {
             EntityMovingBlock block = (EntityMovingBlock) obj;
-            return 12F + (block.block.isToolEffective(block.state, net.minecraftforge.common.ToolType.AXE) ? block.block.getExplosionResistance() : block.block.isToolEffective(block.state, net.minecraftforge.common.ToolType.SHOVEL) ? block.block.getExplosionResistance() * 6 : block.block.getExplosionResistance() * 13);
+            float hardness = block.state.getDestroySpeed(block.level, block.blockPosition());
+            if (block.block.isToolEffective(block.state, net.minecraftforge.common.ToolType.AXE))
+                return 12F + hardness;
+            if (block.block.isToolEffective(block.state, net.minecraftforge.common.ToolType.SHOVEL))
+                return 12F + hardness * 6F;
+            return 12F + hardness * 13F;
         }
-        else if (obj instanceof SquidEntity)
+
+        if (obj instanceof SquidEntity)
             return 400F;
-        else if (obj instanceof PlayerEntity)
-        {
-            PlayerEntity player = (PlayerEntity) obj;
-            if (player.isOnGround() || player.isInWater())
-                WeatherUtilEntity.playerInAirTime = 0;
-            else
-                WeatherUtilEntity.playerInAirTime++;
 
-            if (player.isCreative() || player.isSpectator()) return -1.0F;
+        if (obj instanceof PlayerEntity)
+            return getPlayerWeight((PlayerEntity) obj);
 
-            float extraWeight = 0.0F;
-            if (player.inventory != null)
-                for (ItemStack stack : player.inventory.armor)
-                    if (!stack.isEmpty() && stack.getMaxDamage() > 0)
-                        extraWeight += stack.getMaxDamage() * 0.0025F;
+        if (obj instanceof LivingEntity)
+            return getLivingEntityWeight((LivingEntity) obj);
 
-            return 5.0F + extraWeight + WeatherUtilEntity.playerInAirTime * 0.0025F;
-        }
-        else if (obj instanceof LivingEntity)
-        {
-            LivingEntity livingEnt = (LivingEntity) obj;
-            int airTime = livingEnt.getPersistentData().getInt("timeInAir");
-
-            if (livingEnt.isOnGround() || livingEnt.isInWater())
-                airTime = 0;
-            else
-                airTime++;
-
-            livingEnt.getPersistentData().putInt("timeInAir", airTime);
-            return 5.0F + airTime * 0.0025F;
-
-        }
-        else if (obj instanceof BoatEntity || obj instanceof ItemEntity || obj instanceof FishingBobberEntity)
+        if (obj instanceof BoatEntity || obj instanceof ItemEntity || obj instanceof FishingBobberEntity)
             return 4000F;
-        else if (obj instanceof AbstractMinecartEntity)
+
+        if (obj instanceof AbstractMinecartEntity)
             return 80F;
-        else if (obj instanceof Entity)
-        {
+
+        if (obj instanceof Entity) {
             Entity ent = (Entity) obj;
             if (WeatherUtilData.isWindWeightSet(ent))
                 return WeatherUtilData.getWindWeight(ent);
@@ -101,104 +79,127 @@ public class WeatherUtilEntity {
         return 1F;
     }
 
-    public static boolean isParticleRotServerSafe(World world, Object obj)
-    {
-        return world.isClientSide && WeatherUtilEntity.isParticleRotClientCheck(obj);
+    private static float getPlayerWeight(PlayerEntity player) {
+        int airTime = player.getPersistentData().getInt("timeInAir");
+
+        if (player.isOnGround() || player.isInWater())
+            airTime = 0;
+        else
+            airTime++;
+
+        player.getPersistentData().putInt("timeInAir", airTime);
+
+        if (player.isCreative() || player.isSpectator())
+            return -1.0F;
+
+        float armorWeight = 0.0F;
+        if (player.inventory != null) {
+            for (ItemStack stack : player.inventory.armor) {
+                if (!stack.isEmpty() && stack.getMaxDamage() > 0)
+                    armorWeight += stack.getMaxDamage() * 0.0025F;
+            }
+        }
+
+        return 5.0F + armorWeight + airTime * 0.0025F;
     }
 
-    public static boolean isParticleRotClientCheck(Object obj)
-    {
-        return obj instanceof EntityRotFX;
+    private static float getLivingEntityWeight(LivingEntity entity) {
+        int airTime = entity.getPersistentData().getInt("timeInAir");
+
+        if (entity.isOnGround() || entity.isInWater())
+            airTime = 0;
+        else
+            airTime++;
+
+        entity.getPersistentData().putInt("timeInAir", airTime);
+        return 5.0F + airTime * 0.0025F;
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static boolean canPushEntity(Entity ent)
-    {
+    public static boolean canPushEntity(Entity ent) {
         WindManager windMan = ClientTickHandler.weatherManager.windManager;
 
         double speed = 10.0D;
-        int startX = (int)(ent.getX() - speed * (double)(-Maths.fastSin(windMan.windAngle / 180.0F * (float)Math.PI) * Maths.fastCos(0F / 180.0F * (float)Math.PI)));
-        int startZ = (int)(ent.getZ() - speed * (double)(Maths.fastCos(windMan.windAngle / 180.0F * (float)Math.PI) * Maths.fastCos(0F / 180.0F * (float)Math.PI)));
+        float windRad = windMan.windAngle / 180.0F * (float) Math.PI;
+        int startX = (int) (ent.getX() - speed * (-Maths.fastSin(windRad) * Maths.fastCos(0F)));
+        int startZ = (int) (ent.getZ() - speed * (Maths.fastCos(windRad) * Maths.fastCos(0F)));
 
-        Vector3d start = new Vector3d(ent.getX(), ent.getY() + (double)ent.getEyeHeight(), ent.getZ());
-        Vector3d end = new Vector3d(startX, ent.getY() + (double)ent.getEyeHeight(), startZ);
+        Vector3d start = new Vector3d(ent.getX(), ent.getY() + ent.getEyeHeight(), ent.getZ());
+        Vector3d end = new Vector3d(startX, ent.getY() + ent.getEyeHeight(), startZ);
 
-        BlockRayTraceResult result = ent.level.clip(new RayTraceContext(start, end, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, ent));
+        BlockRayTraceResult result = ent.level.clip(
+                new RayTraceContext(start, end, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, ent));
         return result.getType() == RayTraceResult.Type.MISS;
     }
 
-    public static boolean isEntityOutside(Entity parEnt) {
-        return WeatherUtilEntity.isEntityOutside(parEnt, false);
+    public static boolean isEntityOutside(Entity entity) {
+        return isPosOutside(entity.level, new Vec3(entity.getX(), entity.getY(), entity.getZ()), false);
     }
 
-    public static boolean isEntityOutside(Entity parEnt, boolean cheapCheck) {
-        return WeatherUtilEntity.isPosOutside(parEnt.level, new Vec3(parEnt.getX(), parEnt.getY(), parEnt.getZ()), cheapCheck);
+    public static boolean isEntityOutside(Entity entity, boolean cheapCheck) {
+        return isPosOutside(entity.level, new Vec3(entity.getX(), entity.getY(), entity.getZ()), cheapCheck);
     }
 
-    public static boolean isPosOutside(World parWorld, Vec3 parPos) {
-        return WeatherUtilEntity.isPosOutside(parWorld, parPos, false);
+    public static boolean isPosOutside(World world, Vec3 pos) {
+        return isPosOutside(world, pos, false);
     }
 
-    public static boolean isPosOutside(World parWorld, Vec3 parPos, boolean cheapCheck)
-    {
+    public static boolean isPosOutside(World world, Vec3 pos, boolean cheapCheck) {
         int rangeCheck = 5;
         int yOffset = 1;
 
-        if (WeatherUtilBlock.getPrecipitationHeightSafe(parWorld, new BlockPos(MathHelper.floor(parPos.posX), 0, MathHelper.floor(parPos.posZ))).getY() < parPos.posY+1) return true;
+        BlockPos groundPos = new BlockPos(MathHelper.floor(pos.posX), 0, MathHelper.floor(pos.posZ));
+        if (WeatherUtilBlock.getPrecipitationHeightSafe(world, groundPos).getY() < pos.posY + 1)
+            return true;
 
-        if (cheapCheck) return false;
+        if (cheapCheck)
+            return false;
 
-        Vec3 vecTry = new Vec3(parPos.posX + Direction.NORTH.getStepX()*rangeCheck, parPos.posY+yOffset, parPos.posZ + Direction.NORTH.getStepZ()*rangeCheck);
-        if (WeatherUtilEntity.checkVecOutside(parWorld, parPos, vecTry)) return true;
-
-        vecTry = new Vec3(parPos.posX + Direction.SOUTH.getStepX()*rangeCheck, parPos.posY+yOffset, parPos.posZ + Direction.SOUTH.getStepZ()*rangeCheck);
-        if (WeatherUtilEntity.checkVecOutside(parWorld, parPos, vecTry)) return true;
-
-        vecTry = new Vec3(parPos.posX + Direction.EAST.getStepX()*rangeCheck, parPos.posY+yOffset, parPos.posZ + Direction.EAST.getStepZ()*rangeCheck);
-        if (WeatherUtilEntity.checkVecOutside(parWorld, parPos, vecTry)) return true;
-
-        vecTry = new Vec3(parPos.posX + Direction.WEST.getStepX()*rangeCheck, parPos.posY+yOffset, parPos.posZ + Direction.WEST.getStepZ()*rangeCheck);
-        if (WeatherUtilEntity.checkVecOutside(parWorld, parPos, vecTry)) return true;
+        for (Direction dir : new Direction[]{Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST}) {
+            Vec3 target = new Vec3(
+                    pos.posX + dir.getStepX() * rangeCheck,
+                    pos.posY + yOffset,
+                    pos.posZ + dir.getStepZ() * rangeCheck);
+            if (checkVecOutside(world, pos, target))
+                return true;
+        }
 
         return false;
     }
 
-    public static boolean checkVecOutside(World parWorld, Vec3 parPos, Vec3 parCheckPos)
-    {
-        Vector3d start = new Vector3d(parPos.posX, parPos.posY, parPos.posZ);
-        Vector3d end = new Vector3d(parCheckPos.posX, parCheckPos.posY, parCheckPos.posZ);
+    public static boolean checkVecOutside(World world, Vec3 pos, Vec3 checkPos) {
+        Vector3d start = new Vector3d(pos.posX, pos.posY, pos.posZ);
+        Vector3d end = new Vector3d(checkPos.posX, checkPos.posY, checkPos.posZ);
 
-        BlockRayTraceResult result = parWorld.clip(new RayTraceContext(start, end, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
-        return result.getType() == RayTraceResult.Type.MISS && WeatherUtilBlock.getPrecipitationHeightSafe(parWorld, new BlockPos(MathHelper.floor(parCheckPos.posX), 0, MathHelper.floor(parCheckPos.posZ))).getY() < parCheckPos.posY;
+        BlockRayTraceResult result = world.clip(
+                new RayTraceContext(start, end, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
+
+        BlockPos groundPos = new BlockPos(MathHelper.floor(checkPos.posX), 0, MathHelper.floor(checkPos.posZ));
+        return result.getType() == RayTraceResult.Type.MISS
+                && WeatherUtilBlock.getPrecipitationHeightSafe(world, groundPos).getY() < checkPos.posY;
     }
 
-    
-    public static PlayerEntity getClosestPlayer(World world, double posX, double posY, double posZ, double radius)
-    {
-        double min_radius = 9999;
-        PlayerEntity player = null;
+    public static PlayerEntity getClosestPlayer(World world, double posX, double posY, double posZ, double radius) {
+        PlayerEntity closest = null;
+        double minDist = Double.MAX_VALUE;
 
-        for (PlayerEntity entity : world.players())
-        {
-            double player_distance = FartsyUtil.sqrtf((float) entity.distanceToSqr(posX, posY, posZ));
-
-            if (player_distance <= radius && (player_distance < min_radius || player == null))
-            {
-                player = entity;
-                min_radius = player_distance;
-
+        for (PlayerEntity player : world.players()) {
+            double dist = FartsyUtil.sqrtf((float) player.distanceToSqr(posX, posY, posZ));
+            if (dist <= radius && dist < minDist) {
+                closest = player;
+                minDist = dist;
             }
         }
 
-        return player;
+        return closest;
     }
 
-    public static boolean hasAITask(CreatureEntity creature, Class<? extends Goal> clazz)
-    {
+    public static boolean hasAITask(CreatureEntity creature, Class<? extends Goal> clazz) {
         GoalSelectorAccessor accessor = (GoalSelectorAccessor) creature.goalSelector;
-        for (PrioritizedGoal entry : accessor.getAvailableGoals())
+        for (PrioritizedGoal entry : accessor.getAvailableGoals()) {
             if (clazz.isAssignableFrom(entry.getGoal().getClass()))
                 return true;
+        }
         return false;
     }
 }

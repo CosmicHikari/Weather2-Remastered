@@ -1,14 +1,22 @@
 {
-	"entity.lightning.thunder":
-	{
-		"replace": true,
-		"sounds":
-		[
-			{"name": "weather2:weather/thunder_clear_near1"},
-			{"name": "weather2:weather/thunder_clear_near2"},
-			{"name": "weather2:weather/thunder_clear_near3"},
-			{"name": "weather2:weather/thunder_clear_near4"},
-			{"name": "weather2:weather/thunder_clear_near5"}
-		]
-	}
+  "entity.lightning_bolt.thunder": {
+    "replace": true,
+    "sounds": [
+      {
+        "name": "weather2:weather/thunder_clear_near1"
+      },
+      {
+        "name": "weather2:weather/thunder_clear_near2"
+      },
+      {
+        "name": "weather2:weather/thunder_clear_near3"
+      },
+      {
+        "name": "weather2:weather/thunder_clear_near4"
+      },
+      {
+        "name": "weather2:weather/thunder_clear_near5"
+      }
+    ]
+  }
 }

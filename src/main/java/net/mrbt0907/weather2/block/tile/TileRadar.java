@@ -23,13 +23,9 @@ import net.mrbt0907.weather2.weather.storm.WeatherObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TileRadar extends TileEntity implements ITickableTileEntity
-{
+public class TileRadar extends TileEntity implements ITickableTileEntity {
 
-    private int tier = 0;
-    private int pingLength = 60;
-    private int pingMaxLength = 60;
-
+    private final int pingMaxLength = 60;
     public int pingRate = 200;
     public double pingRange = 1024.0D;
     public int showType = 0;
@@ -38,63 +34,55 @@ public class TileRadar extends TileEntity implements ITickableTileEntity
     public boolean showDirection = false;
     public boolean showWindSpeed = false;
     public boolean liveRadar = false;
-
-
     public float fadeRate = 0.05F;
     public float renderAlpha = 1.0F;
     public float renderRange = 2.0F;
-
-
     public float smoothAngle = 0;
     public float smoothSpeed = 0;
     public float smoothAngleRotationalVel = 0;
     public float smoothAngleRotationalVelAccel = 0;
     public float smoothAngleAdj = 0.1F;
     public float smoothSpeedAdj = 0.1F;
-
     public IWeatherDetectable system = null;
     public List<GuiRadarObject> systems = new ArrayList<>();
+    private int tier = 0;
+    private int pingLength = 60;
 
-    public TileRadar()
-    {
+    public TileRadar() {
         this(0);
     }
 
-    public TileRadar(int tier)
-    {
+    public TileRadar(int tier) {
         super(getTileEntityType(tier));
         this.tier = tier;
         refresh();
     }
 
 
-
-    private static TileEntityType<TileRadar> getTileEntityType(int tier)
-    {
-        switch (tier)
-        {
-            case 1: return TileEntityRegistry.WEATHER_FORECAST_2_TILE.get();
-            case 2: return TileEntityRegistry.WEATHER_FORECAST_3_TILE.get();
-            default: return TileEntityRegistry.WEATHER_FORECAST_TILE.get();
+    private static TileEntityType<TileRadar> getTileEntityType(int tier) {
+        switch (tier) {
+            case 1:
+                return TileEntityRegistry.WEATHER_FORECAST_2_TILE.get();
+            case 2:
+                return TileEntityRegistry.WEATHER_FORECAST_3_TILE.get();
+            default:
+                return TileEntityRegistry.WEATHER_FORECAST_TILE.get();
         }
     }
 
     @Override
-    public void tick()
-    {
+    public void tick() {
         if (level != null && level.isClientSide)
             tickClient();
     }
 
-    public int getTier()
-    {
+    public int getTier() {
         return tier;
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public AxisAlignedBB getRenderBoundingBox()
-    {
+    public AxisAlignedBB getRenderBoundingBox() {
         return new AxisAlignedBB(
                 worldPosition.getX() - renderRange,
                 worldPosition.getY(),
@@ -105,12 +93,10 @@ public class TileRadar extends TileEntity implements ITickableTileEntity
         );
     }
 
-    private void refresh()
-    {
+    private void refresh() {
         showEF = ConfigStorm.enable_ef_scale || tier > 1;
 
-        switch (tier)
-        {
+        switch (tier) {
             case 1:
                 pingRate = 150;
                 pingRange = ConfigMisc.doppler_radar_range;
@@ -142,30 +128,23 @@ public class TileRadar extends TileEntity implements ITickableTileEntity
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void tickClient()
-    {
-        if (level.getGameTime() % pingRate == 0)
-        {
+    public void tickClient() {
+        if (level.getGameTime() % pingRate == 0) {
             BlockPos pos = getBlockPos();
 
-            if (ConfigMisc.debug_mode_radar)
-            {
+            if (ConfigMisc.debug_mode_radar) {
                 WeatherObject weatherSystem = net.mrbt0907.weather2.client.event.ClientTickHandler.weatherManager
                         .getClosestWeather(new Vec3(pos.getX(), pos.getY(), pos.getZ()), pingRange);
                 this.system = (weatherSystem == null || weatherSystem.isDead ? null : weatherSystem);
-            }
-            else
+            } else
                 system = null;
 
             systems.clear();
 
-            for (FrontObject front : net.mrbt0907.weather2.client.event.ClientTickHandler.weatherManager.getFronts())
-            {
-                if (!front.isGlobal())
-                {
+            for (FrontObject front : net.mrbt0907.weather2.client.event.ClientTickHandler.weatherManager.getFronts()) {
+                if (!front.isGlobal()) {
                     if (Maths.distanceSq(pos.getX(), pos.getY(), pos.getZ(),
-                            front.pos.posX, pos.getY(), front.pos.posZ) <= pingRange)
-                    {
+                            front.pos.posX, pos.getY(), front.pos.posZ) <= pingRange) {
                         systems.add(new GuiRadarObject(front));
                         front.getWeatherObjects().forEach(so -> {
                             if ((ConfigMisc.debug_mode_radar || !so.type.equals(Type.CLOUD))
@@ -174,9 +153,7 @@ public class TileRadar extends TileEntity implements ITickableTileEntity
                                 systems.add(new GuiRadarObject(so));
                         });
                     }
-                }
-                else
-                {
+                } else {
                     front.getWeatherObjects().forEach(so -> {
                         if ((ConfigMisc.debug_mode_radar || !so.type.equals(Type.CLOUD))
                                 && Maths.distanceSq(pos.getX(), pos.getY(), pos.getZ(),
@@ -190,35 +167,32 @@ public class TileRadar extends TileEntity implements ITickableTileEntity
             renderAlpha = 1.0F;
         }
 
-        if (pingLength == 0 && renderAlpha > 0.1F)
-            renderAlpha -= fadeRate;
+        if (pingLength == 0) {
+            renderAlpha = Math.max(0.0F, renderAlpha - fadeRate);
+        }
 
         if (pingLength > 0)
             pingLength--;
     }
 
     @OnlyIn(Dist.CLIENT)
-    public double getPingRange(int tier)
-    {
+    public double getPingRange(int tier) {
         return tier == 1 ? ConfigMisc.doppler_radar_range
                 : tier == 2 ? ConfigMisc.pulse_doppler_radar_range
                 : ConfigMisc.radar_range;
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT tag)
-    {
+    public CompoundNBT save(CompoundNBT tag) {
         tag = super.save(tag);
         tag.putInt("tier", tier);
         return tag;
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT tag)
-    {
+    public void load(BlockState state, CompoundNBT tag) {
         super.load(state, tag);
-        if (tag.contains("tier"))
-        {
+        if (tag.contains("tier")) {
             tier = tag.getInt("tier");
             fadeRate = tier == 0 ? 0.0035F : tier == 1 ? 0.001F : 0.0005F;
         }

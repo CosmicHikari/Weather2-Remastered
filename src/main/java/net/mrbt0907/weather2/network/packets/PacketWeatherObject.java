@@ -6,10 +6,8 @@ import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
 import net.mrbt0907.weather2.weather.storm.WeatherObject;
 
-public class PacketWeatherObject extends PacketBase
-{
-    public static void create(Object target, WeatherObject wo)
-    {
+public class PacketWeatherObject extends PacketBase {
+    public static void create(Object target, WeatherObject wo) {
         CompoundNBT nbt = new CompoundNBT();
         wo.nbt.setUpdateForced(true);
         wo.writeToNBT();
@@ -18,8 +16,7 @@ public class PacketWeatherObject extends PacketBase
         send(1, nbt, target);
     }
 
-    public static void update(Object target, WeatherObject wo)
-    {
+    public static void update(Object target, WeatherObject wo) {
         CompoundNBT nbt = new CompoundNBT();
         wo.nbt.setNewNBT(new CompoundNBT());
         wo.writeToNBT();
@@ -27,16 +24,14 @@ public class PacketWeatherObject extends PacketBase
         send(2, nbt, target);
     }
 
-    public static void remove(RegistryKey<World> dimension, WeatherObject wo)
-    {
+    public static void remove(RegistryKey<World> dimension, WeatherObject wo) {
         CompoundNBT nbt = new CompoundNBT();
         nbt.putUUID("frontObject", wo.front.getUUID());
         nbt.putUUID("weatherObject", wo.getUUID());
         send(3, nbt, dimension);
     }
 
-    public static void clientCleanup(ServerPlayerEntity player)
-    {
+    public static void clientCleanup(ServerPlayerEntity player) {
         send(14, new CompoundNBT(), player);
     }
 }

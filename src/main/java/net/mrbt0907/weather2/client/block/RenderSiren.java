@@ -6,8 +6,7 @@ import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
 
-public class RenderSiren extends TileEntityRenderer<TileEntity>
-{
+public class RenderSiren extends TileEntityRenderer<TileEntity> {
     public RenderSiren(TileEntityRendererDispatcher rendererDispatcherIn) {
         super(rendererDispatcherIn);
     }

@@ -1,6 +1,6 @@
 {
   "parent": "weather2:block/weather_forecast_3",
   "textures": {
-    "all": "weather2:blocks/weather_forecast_3"
+    "all": "weather2:block/weather_forecast_3"
   }
 }

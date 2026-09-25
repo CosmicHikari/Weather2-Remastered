@@ -1,9 +1,8 @@
 package net.mrbt0907.weather2.client.event;
 
-import net.extendedrenderer.ExtendedRenderer;
-import net.extendedrenderer.render.FoliageRenderer;
+import net.corosus.extendedrenderer.ExtendedRenderer;
+import net.corosus.extendedrenderer.render.FoliageRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MainWindow;
 import net.minecraft.client.gui.screen.IngameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -28,8 +27,7 @@ import net.mrbt0907.weather2.network.packets.PacketData;
 import net.mrbt0907.weather2.util.Maths;
 import net.mrbt0907.weather2.util.Maths.Vec3;
 
-public class ClientTickHandler
-{
+public class ClientTickHandler {
     public static World lastWorld;
     public static WeatherManagerClient weatherManager;
     public static FoliageEnhancerShader foliageEnhancer;
@@ -45,13 +43,11 @@ public class ClientTickHandler
     public boolean extraGrassLast = ConfigFoliage.enable_extra_grass;
     public boolean op = false;
 
-    public ClientTickHandler()
-    {
+    public ClientTickHandler() {
 
         new Thread(NewSceneEnhancer.instance(), "Weather2 New Scene Enhancer").start();
 
-        if (foliageEnhancer == null)
-        {
+        if (foliageEnhancer == null) {
             foliageEnhancer = new FoliageEnhancerShader();
             (new Thread(foliageEnhancer, "Weather2 Foliage Enhancer")).start();
         }
@@ -59,12 +55,42 @@ public class ClientTickHandler
         op = ConfigManager.getPermissionLevel() > 3;
     }
 
-    
+    public static void resetClientWeather() {
+        if (weatherManager != null) {
+            Weather2.debug("Weather2: Detected old WeatherManagerClient with unloaded world, clearing its data");
+            weatherManager.reset(true);
+            weatherManager = null;
+        }
+    }
+
+    public static void checkClientWeather() {
+        try {
+            World world = Minecraft.getInstance().level;
+            if (weatherManager == null || world != lastWorld)
+                init(world);
+        } catch (Exception ex) {
+            Weather2.debug("Weather2: Warning, client received packet before it was ready to use, and failed to init client weather due to null world");
+        }
+    }
+
+    public static void init(World world) {
+
+        if (weatherManager != null) {
+            Weather2.debug("Weather2: Detected old WeatherManagerClient with active world, clearing its data");
+            weatherManager.reset(true);
+        }
+
+        Weather2.debug("Weather2: Initializing WeatherManagerClient for client world and requesting full sync");
+
+        lastWorld = world;
+        weatherManager = new WeatherManagerClient(world);
+
+        PacketData.sync();
+    }
+
     @SubscribeEvent
-    public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event)
-    {
-        if (event.getGui() instanceof IngameMenuScreen)
-        {
+    public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
+        if (event.getGui() instanceof IngameMenuScreen) {
             int scaledWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
             int scaledHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
 
@@ -81,21 +107,17 @@ public class ClientTickHandler
         }
     }
 
-
-    public void onTickInGUI(Screen guiscreen)
-    {
+    public void onTickInGUI(Screen guiscreen) {
 
     }
 
-    public void onTickInGame()
-    {
+    public void onTickInGame() {
         if (ConfigMisc.toaster_pc_mode) return;
 
         Minecraft mc = Minecraft.getInstance();
         World world = mc.level;
 
-        if (world != null)
-        {
+        if (world != null) {
             checkClientWeather();
             weatherManager.tick();
 
@@ -109,8 +131,7 @@ public class ClientTickHandler
             if (EZConfigParser.isEffectsEnabled(dimensionLocation))
                 NewSceneEnhancer.instance().tick();
 
-            if (!EZConfigParser.isWeatherEnabled(dimensionLocation) && weatherManager.getFronts().size() > 1)
-            {
+            if (!EZConfigParser.isWeatherEnabled(dimensionLocation) && weatherManager.getFronts().size() > 1) {
                 Weather2.debug("Removing all storms as the dimension weather is disabled");
                 weatherManager.reset(false);
             }
@@ -122,8 +143,7 @@ public class ClientTickHandler
 
             float diff = Math.abs(windDir - smoothAngle);
 
-            if (diff > 10)
-            {
+            if (diff > 10) {
                 if (smoothAngle > 180) smoothAngle -= 360;
                 if (smoothAngle < -180) smoothAngle += 360;
 
@@ -182,47 +202,7 @@ public class ClientTickHandler
                 float baseTimeChangeRate = 60F;
                 FoliageRenderer.windTime += (baseTimeChangeRate * ExtendedRenderer.foliageRenderer.windSpeedSmooth);
             }
-        }
-        else
+        } else
             resetClientWeather();
-    }
-
-    public static void resetClientWeather() {
-        if (weatherManager != null) {
-            Weather2.debug("Weather2: Detected old WeatherManagerClient with unloaded world, clearing its data");
-            weatherManager.reset(true);
-            weatherManager = null;
-        }
-    }
-
-    public static void checkClientWeather()
-    {
-        try
-        {
-            World world = Minecraft.getInstance().level;
-            if (weatherManager == null || world != lastWorld)
-                init(world);
-        }
-        catch (Exception ex)
-        {
-            Weather2.debug("Weather2: Warning, client received packet before it was ready to use, and failed to init client weather due to null world");
-        }
-    }
-
-    public static void init(World world)
-    {
-
-        if (weatherManager != null)
-        {
-            Weather2.debug("Weather2: Detected old WeatherManagerClient with active world, clearing its data");
-            weatherManager.reset(true);
-        }
-
-        Weather2.debug("Weather2: Initializing WeatherManagerClient for client world and requesting full sync");
-
-        lastWorld = world;
-        weatherManager = new WeatherManagerClient(world);
-
-        PacketData.sync();
     }
 }

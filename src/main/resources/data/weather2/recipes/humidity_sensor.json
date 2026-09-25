@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ABA",
+    "CDE",
+    "AFA"
+  ],
+  "key": {
+    "A": {
+      "tag": "forge:ingots/iron"
+    },
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "C": {
+      "item": "weather2:bulb_dry"
+    },
+    "D": {
+      "item": "weather2:rain_sensor"
+    },
+    "E": {
+      "item": "weather2:bulb_wet"
+    },
+    "F": {
+      "item": "weather2:cpu_1"
+    }
+  },
+  "result": {
+    "item": "weather2:humidity_sensor"
+  }
+}

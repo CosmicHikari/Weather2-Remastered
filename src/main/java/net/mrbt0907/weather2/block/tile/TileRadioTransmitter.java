@@ -16,19 +16,16 @@ import net.mrbt0907.weather2.api.interfaces.IRadioTransmitter;
 import net.mrbt0907.weather2.api.interfaces.ITileInteractable;
 import net.mrbt0907.weather2.registry.TileEntityRegistry;
 
-public class TileRadioTransmitter extends TileMachine implements IRadioTransmitter<TileEntity>, ITileInteractable
-{
+public class TileRadioTransmitter extends TileMachine implements IRadioTransmitter<TileEntity>, ITileInteractable {
     protected String frequency;
     protected String message;
     protected ResourceLocation sound;
 
-    public TileRadioTransmitter()
-    {
+    public TileRadioTransmitter() {
         this(TileEntityRegistry.RADIO_TRANSMITTER_TILE.get());
     }
 
-    public TileRadioTransmitter(TileEntityType<?> tileEntityTypeIn)
-    {
+    public TileRadioTransmitter(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
         frequency = "";
         message = "";
@@ -36,8 +33,7 @@ public class TileRadioTransmitter extends TileMachine implements IRadioTransmitt
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT nbt)
-    {
+    public CompoundNBT save(CompoundNBT nbt) {
         nbt.putString("frequency", frequency);
         nbt.putString("message", message);
         if (sound != null)
@@ -46,8 +42,7 @@ public class TileRadioTransmitter extends TileMachine implements IRadioTransmitt
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT nbt)
-    {
+    public void load(BlockState state, CompoundNBT nbt) {
         super.load(state, nbt);
         frequency = nbt.getString("frequency");
         message = nbt.getString("message");
@@ -56,57 +51,48 @@ public class TileRadioTransmitter extends TileMachine implements IRadioTransmitt
     }
 
     @Override
-    public void setRadioFrequency(TileEntity obj, String frequency)
-    {
+    public void setRadioFrequency(TileEntity obj, String frequency) {
         this.frequency = frequency;
     }
 
     @Override
-    public String getRadioFrequency(TileEntity obj)
-    {
+    public String getRadioFrequency(TileEntity obj) {
         return frequency;
     }
 
     @Override
-    public void setRadioMessage(TileEntity obj, String message)
-    {
+    public void setRadioMessage(TileEntity obj, String message) {
         this.message = message;
     }
 
     @Override
-    public String getRadioMessage(TileEntity obj)
-    {
+    public String getRadioMessage(TileEntity obj) {
         return message;
     }
 
     @Override
-    public void setRadioSound(TileEntity obj, ResourceLocation sound)
-    {
+    public void setRadioSound(TileEntity obj, ResourceLocation sound) {
         this.sound = sound;
     }
 
     @Override
-    public ResourceLocation getRadioSound(TileEntity obj)
-    {
+    public ResourceLocation getRadioSound(TileEntity obj) {
         return sound;
     }
 
     @Override
-    public void onTileActivated(World world, BlockPos pos, BlockState state, PlayerEntity player, Hand hand, Direction facing, float hitX, float hitY, float hitZ)
-    {
+    public void onTileActivated(World world, BlockPos pos, BlockState state, PlayerEntity player, Hand hand, Direction facing, float hitX, float hitY, float hitZ) {
         if (world.isClientSide)
             openScreen();
     }
 
     @OnlyIn(Dist.CLIENT)
-    private void openScreen()
-    {
+    private void openScreen() {
         net.minecraft.client.Minecraft.getInstance().setScreen(new net.mrbt0907.weather2.client.gui.GuiEZConfig());
     }
 
     @Override
-    public void setRemoved()
-    {
+    public void setRemoved() {
         super.setRemoved();
     }
 }

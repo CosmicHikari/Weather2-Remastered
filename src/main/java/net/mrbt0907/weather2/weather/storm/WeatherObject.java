@@ -1,7 +1,5 @@
 package net.mrbt0907.weather2.weather.storm;
 
-import java.util.UUID;
-
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -13,9 +11,9 @@ import net.mrbt0907.weather2.util.CachedNBTTagCompound;
 import net.mrbt0907.weather2.util.Maths.Vec3;
 import net.mrbt0907.weather2.weather.WeatherManager;
 
-public abstract class WeatherObject implements IWeatherDetectable
-{
-    private UUID id;
+import java.util.UUID;
+
+public abstract class WeatherObject implements IWeatherDetectable {
     public FrontObject front;
     public WeatherManager manager;
     public CachedNBTTagCompound nbt;
@@ -27,16 +25,12 @@ public abstract class WeatherObject implements IWeatherDetectable
     public boolean isDead = false;
     public long ticks = 0L;
     public int size = ConfigStorm.min_storm_size;
-
     public AbstractWeatherLogic weatherLogic;
-
-    protected World world;
-
-    
     public int ticksSinceNoNearPlayer = 0;
+    protected World world;
+    private UUID id;
 
-    public WeatherObject(FrontObject front)
-    {
+    public WeatherObject(FrontObject front) {
         this.front = front;
         manager = front.getWeatherManager();
         nbt = new CachedNBTTagCompound();
@@ -44,13 +38,11 @@ public abstract class WeatherObject implements IWeatherDetectable
         init();
     }
 
-    public void init()
-    {
+    public void init() {
         id = UUID.randomUUID();
     }
 
-    public void tick()
-    {
+    public void tick() {
         ticks++;
 
         if (ticks < 0)
@@ -58,10 +50,10 @@ public abstract class WeatherObject implements IWeatherDetectable
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void tickRender(float partialTick) {}
+    public void tickRender(float partialTick) {
+    }
 
-    public void setDead()
-    {
+    public void setDead() {
         isDead = true;
 
 
@@ -71,14 +63,19 @@ public abstract class WeatherObject implements IWeatherDetectable
         cleanup();
     }
 
-    public void reset() {setDead();}
-    public void cleanup() {manager = null;}
+    public void reset() {
+        setDead();
+    }
+
+    public void cleanup() {
+        manager = null;
+    }
 
     @OnlyIn(Dist.CLIENT)
-    public void cleanupClient(boolean wipe) {}
+    public void cleanupClient(boolean wipe) {
+    }
 
-    public void readFromNBT()
-    {
+    public void readFromNBT() {
         if (nbt.getNewNBT().hasUUID("ID")) {
             UUID loadedId = nbt.getUUID("ID");
             if (loadedId != null) {
@@ -95,8 +92,7 @@ public abstract class WeatherObject implements IWeatherDetectable
         ticksSinceNoNearPlayer = 0;
     }
 
-    public CachedNBTTagCompound writeToNBT()
-    {
+    public CachedNBTTagCompound writeToNBT() {
         nbt.setDouble("posX", pos.posX);
         nbt.setDouble("posY", pos.posY);
         nbt.setDouble("posZ", pos.posZ);
@@ -115,19 +111,25 @@ public abstract class WeatherObject implements IWeatherDetectable
         return nbt;
     }
 
-    public int getNetRate() {return 40;}
-    public boolean isDangerous() {return type.isDangerous();}
-    public UUID getUUID() {return id;}
+    public int getNetRate() {
+        return 40;
+    }
+
+    public boolean isDangerous() {
+        return type.isDangerous();
+    }
+
+    public UUID getUUID() {
+        return id;
+    }
 
     @Override
-    public Vec3 getPos()
-    {
+    public Vec3 getPos() {
         return pos;
     }
 
     @Override
-    public boolean isDying()
-    {
+    public boolean isDying() {
         return isDying;
     }
 }

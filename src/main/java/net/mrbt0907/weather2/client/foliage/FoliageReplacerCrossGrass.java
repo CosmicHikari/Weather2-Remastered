@@ -1,6 +1,6 @@
 package net.mrbt0907.weather2.client.foliage;
 
-import net.CoroUtil.util.Vec3;
+import net.corosus.coroutillegacy.util.Vec3;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.state.Property;
@@ -15,7 +15,7 @@ public class FoliageReplacerCrossGrass extends FoliageReplacerCross {
         super(state);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public boolean validFoliageSpot(World world, BlockPos pos) {
         if (baseMaterial == null || world.getBlockState(pos).getMaterial() == baseMaterial) {
@@ -29,10 +29,7 @@ public class FoliageReplacerCrossGrass extends FoliageReplacerCross {
                             break;
                         }
                     }
-                    if (fail) {
-                        return false;
-                    }
-                    return true;
+                    return !fail;
                 } else {
                     return false;
                 }
@@ -57,7 +54,7 @@ public class FoliageReplacerCrossGrass extends FoliageReplacerCross {
                 block = world.getBlockState(pos.above(height)).getBlock();
             }
         }
-        
+
         Vec3 vec = new Vec3(0.2, 0, 0.2);
 
         FoliageEnhancerShader.addForPos(this, height, pos, vec, biomeColorize, -1, new Vec3(0, 0, 0));

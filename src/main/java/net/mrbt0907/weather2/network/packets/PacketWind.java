@@ -7,10 +7,8 @@ import net.minecraftforge.fml.InterModComms;
 import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.weather.WindManager;
 
-public class PacketWind extends PacketBase
-{
-    public static void update(RegistryKey<World> dimension, WindManager wm)
-    {
+public class PacketWind extends PacketBase {
+    public static void update(RegistryKey<World> dimension, WindManager wm) {
         CompoundNBT nbt = new CompoundNBT();
         nbt.put("manager", wm.nbtSyncForClient());
         send(6, nbt, dimension);

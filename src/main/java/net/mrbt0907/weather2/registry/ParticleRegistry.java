@@ -1,22 +1,22 @@
 package net.mrbt0907.weather2.registry;
 
-import net.extendedrenderer.render.RotatingParticleManager;
-import net.extendedrenderer.shader.MeshBufferManagerFoliage;
-import net.extendedrenderer.shader.MeshBufferManagerParticle;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.corosus.extendedrenderer.render.RotatingParticleManager;
+import net.corosus.extendedrenderer.shader.MeshBufferManagerFoliage;
+import net.corosus.extendedrenderer.shader.MeshBufferManagerParticle;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.TextureStitchEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.mrbt0907.weather2.Weather2;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = Weather2.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-public class ParticleRegistry
-{
+public class ParticleRegistry {
     public static TextureAtlasSprite cloud;
     public static TextureAtlasSprite cloud_legacy;
     public static TextureAtlasSprite cloud256;
@@ -53,13 +53,16 @@ public class ParticleRegistry
     public static TextureAtlasSprite concerned;
 
     @SubscribeEvent
-    public static void onTextureStitchPre(TextureStitchEvent.Pre event)
-    {
+    public static void onTextureStitchPre(TextureStitchEvent.Pre event) {
         if (!event.getMap().location().equals(AtlasTexture.LOCATION_BLOCKS))
             return;
 
-        MeshBufferManagerParticle.cleanup();
-        MeshBufferManagerFoliage.cleanup();
+        MeshBufferManagerParticle.clearMapOnly();
+        MeshBufferManagerFoliage.clearMapOnly();
+        RenderSystem.recordRenderCall(() -> {
+            MeshBufferManagerParticle.cleanup();
+            MeshBufferManagerFoliage.cleanup();
+        });
 
         event.addSprite(new ResourceLocation(Weather2.OLD_MODID, "particles/cloud256"));
         event.addSprite(new ResourceLocation(Weather2.OLD_MODID, "particles/cloud256_light"));
@@ -90,8 +93,7 @@ public class ParticleRegistry
     }
 
     @SubscribeEvent
-    public static void onTextureStitchPost(TextureStitchEvent.Post event)
-    {
+    public static void onTextureStitchPost(TextureStitchEvent.Post event) {
         if (!event.getMap().location().equals(AtlasTexture.LOCATION_BLOCKS))
             return;
 

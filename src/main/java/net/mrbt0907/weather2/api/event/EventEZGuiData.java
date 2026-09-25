@@ -7,7 +7,7 @@ public class EventEZGuiData extends Event {
     public final int oldValue;
     public final int newValue;
 
-    
+
     public EventEZGuiData(String id, int oldValue, int newValue) {
         this.id = id;
         this.oldValue = oldValue;

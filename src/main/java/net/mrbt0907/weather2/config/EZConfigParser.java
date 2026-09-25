@@ -1,13 +1,11 @@
 package net.mrbt0907.weather2.config;
 
-import net.CoroUtil.config.ConfigCoroUtil;
-import net.CoroUtil.util.CoroUtilFile;
+import net.corosus.coroutillegacy.config.ConfigCoroUtilLegacy;
+import net.corosus.coroutillegacy.util.CoroUtilFile;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
-import net.modconfig.ConfigMod;
-import net.modconfig.ModConfigData;
 import net.mrbt0907.configex.ConfigManager;
 import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.api.EZGuiAPI;
@@ -459,77 +457,73 @@ public class EZConfigParser {
                 case EZGuiAPI.BA_SHADER:
                     switch (value) {
                         case 0:
-                            ConfigCoroUtil.particleShaders = true;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = true;
+                            ConfigCoroUtilLegacy.particleShaders = true;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = true;
                             ConfigMisc.proxy_render_override = true;
                             break;
                         case 1:
-                            ConfigCoroUtil.particleShaders = false;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = false;
+                            ConfigCoroUtilLegacy.particleShaders = false;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = false;
                             ConfigMisc.proxy_render_override = true;
                             break;
                         case 2:
-                            ConfigCoroUtil.particleShaders = false;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = false;
+                            ConfigCoroUtilLegacy.particleShaders = false;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = false;
                             ConfigMisc.proxy_render_override = true;
                             break;
                         case 3:
-                            ConfigCoroUtil.particleShaders = true;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = true;
+                            ConfigCoroUtilLegacy.particleShaders = true;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = true;
                             ConfigMisc.proxy_render_override = true;
                             break;
                         case 4:
-                            ConfigCoroUtil.particleShaders = true;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = false;
+                            ConfigCoroUtilLegacy.particleShaders = true;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = false;
                             ConfigMisc.proxy_render_override = false;
                             break;
                         case 5:
-                            ConfigCoroUtil.particleShaders = true;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = false;
+                            ConfigCoroUtilLegacy.particleShaders = true;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = false;
                             ConfigMisc.proxy_render_override = false;
                             break;
                         case 6:
-                            ConfigCoroUtil.particleShaders = true;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = false;
+                            ConfigCoroUtilLegacy.particleShaders = true;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = false;
                             ConfigMisc.proxy_render_override = true;
                             break;
                         case 7:
-                            ConfigCoroUtil.particleShaders = true;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = false;
+                            ConfigCoroUtilLegacy.particleShaders = true;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = false;
                             ConfigMisc.proxy_render_override = false;
                             break;
                         case 8:
-                            ConfigCoroUtil.particleShaders = true;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = false;
+                            ConfigCoroUtilLegacy.particleShaders = true;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = false;
                             ConfigMisc.proxy_render_override = false;
                             break;
                         case 9:
-                            ConfigCoroUtil.particleShaders = true;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = false;
+                            ConfigCoroUtilLegacy.particleShaders = true;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = false;
                             ConfigMisc.proxy_render_override = false;
                             break;
                         case 10:
-                            ConfigCoroUtil.particleShaders = true;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = false;
+                            ConfigCoroUtilLegacy.particleShaders = true;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = false;
                             ConfigMisc.proxy_render_override = false;
                             break;
                         case 11:
-                            ConfigCoroUtil.particleShaders = false;
-                            ConfigCoroUtil.useEntityRenderHookForShaders = false;
+                            ConfigCoroUtilLegacy.particleShaders = false;
+                            ConfigCoroUtilLegacy.useEntityRenderHookForShaders = false;
                             ConfigMisc.proxy_render_override = false;
                             break;
                     }
-                    ModConfigData coroGeneralCfg = ConfigMod.configLookup.get("coroutil_general");
-                    if (coroGeneralCfg != null) {
-                        coroGeneralCfg.updateField("particleShaders", ConfigCoroUtil.particleShaders);
-                        coroGeneralCfg.updateField("useEntityRenderHookForShaders", ConfigCoroUtil.useEntityRenderHookForShaders);
-                    }
+                    ConfigManager.save("CoroUtilLegacy - General");
                     break;
-                case EZGuiAPI.BA_VANILLAFOG:
-                    ConfigClient.enable_vanilla_fog = value == 1;
+                case EZGuiAPI.BA_CUSTOMFOG:
+                    ConfigClient.enable_custom_fog = value == 1;
                     break;
                 case EZGuiAPI.BA_FOLIAGE:
-                    ConfigCoroUtil.foliageShaders = value == 1;
+                    ConfigCoroUtilLegacy.foliageShaders = value == 1;
                     break;
                 case EZGuiAPI.BA_RENDER_DISTANCE:
                     switch (value) {
@@ -574,9 +568,8 @@ public class EZConfigParser {
                             ConfigClient.max_particles = -1;
                             break;
                     }
-                    break;
                 case EZGuiAPI.BA_FANCY_RENDERING:
-                    ConfigClient.enable_legacy_rendering = value != 1;
+                    ConfigClient.enable_legacy_rendering = value == 0;
                     break;
                 case EZGuiAPI.BA_RADAR:
                     ConfigMisc.debug_mode_radar = value == 1;

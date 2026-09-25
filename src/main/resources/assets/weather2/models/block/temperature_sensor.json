@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "weather2:blocks/temperature_sensor"
+    "all": "weather2:block/temperature_sensor"
   }
 }

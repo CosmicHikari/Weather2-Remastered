@@ -20,7 +20,7 @@ public class ConfigClient implements IConfigEX {
     public static boolean enable_volumetrics = false;
     @Hidden
     @Comment("Enables on screen debug information about the current particle renderer")
-    public static boolean enable_debug_renderer = true;
+    public static boolean enable_debug_renderer = false; // production version, changed from true
     @Permission(0)
     @Comment("Enables falling leaves in the wind")
     public static boolean enable_falling_leaves = true;
@@ -163,8 +163,8 @@ public class ConfigClient implements IConfigEX {
     @Comment("Fog change rate that adjusts how fast fog changes states")
     public static double fog_change_rate = 1.0D;
     @Permission(0)
-    @Comment("Enable or Disable Vanilla Fog. Optifine shader users should disable vanilla fog.")
-    public static boolean enable_vanilla_fog = false;
+    @Comment("Enable or Disable Storm Fog. Also affects optifine compatibility.")
+    public static boolean enable_custom_fog = true;
 
     @Override
     public String getName() {
@@ -183,7 +183,6 @@ public class ConfigClient implements IConfigEX {
 
     @Override
     public void onConfigChanged(Phase phase, int variables) {
-
         if (Phase.END.equals(phase) && FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT) {
             if (ConfigClient.enable_volumetrics) {
                 if (VolumetricRenderer.shader == null)
@@ -200,5 +199,6 @@ public class ConfigClient implements IConfigEX {
 
     @Override
     public void onValueChanged(String variable, Object oldValue, Object newValue) {
+        //
     }
 }

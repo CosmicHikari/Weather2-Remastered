@@ -11,7 +11,7 @@ public class EventRegisterGrabLists extends Event {
     public final ConfigList entityList;
     public final ConfigList windResistanceList;
 
-    
+
     public EventRegisterGrabLists(ConfigList grabList, ConfigList replaceList, ConfigList entityList, ConfigList windResistanceList) {
         this.grabList = grabList;
         this.replaceList = replaceList;

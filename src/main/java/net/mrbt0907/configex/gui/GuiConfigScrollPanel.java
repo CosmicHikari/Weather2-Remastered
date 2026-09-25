@@ -1,11 +1,9 @@
 package net.mrbt0907.configex.gui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -18,19 +16,20 @@ import net.mrbt0907.configex.ConfigManager;
 import net.mrbt0907.configex.ConfigModEX;
 import net.mrbt0907.configex.manager.ConfigInstance;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @OnlyIn(Dist.CLIENT)
-public class GuiConfigScrollPanel extends GuiScrollPanel
-{
+public class GuiConfigScrollPanel extends GuiScrollPanel {
     private static final String NEW_LINE = "\n";
-    private GuiConfigEditor config;
     public final List<ConfigInstance> configs;
     public final List<GuiConfigEntry> options;
+    private final GuiConfigEditor config;
+    protected int mouseYStart = -1;
     private int mouseX;
     private int mouseY;
-    protected int mouseYStart = -1;
 
-    public GuiConfigScrollPanel(GuiConfigEditor controls, Minecraft mc, int scrollBarX, int width, int height, int scrollBarSize, int slotHeight)
-    {
+    public GuiConfigScrollPanel(GuiConfigEditor controls, Minecraft mc, int scrollBarX, int width, int height, int scrollBarSize, int slotHeight) {
         super(mc, controls.xStart, controls.yStart, scrollBarX, width, height, scrollBarSize, slotHeight, 7, 8);
         this.config = controls;
         configs = ConfigManager.getInstances();
@@ -39,15 +38,12 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
     }
 
     @Override
-    protected void onSlotClicked(int i, boolean flag)
-    {
-        if (!flag)
-        {
+    protected void onSlotClicked(int i, boolean flag) {
+        if (!flag) {
             int size = getSize();
             if (i < size)
                 selected = i;
-            else
-            {
+            else {
                 ConfigModEX.warn("Index was set higher than options list. Bringing index back into range...");
                 selected = size - 1;
             }
@@ -56,22 +52,19 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int eventButton)
-    {
-        boolean handled = false;
-        for (GuiConfigEntry entry : options)
-        {
-            if (entry.textField.mouseClicked(mouseX, mouseY, eventButton))
-                handled = true;
+    public boolean mouseClicked(double mouseX, double mouseY, int eventButton) {
+        for (GuiConfigEntry entry : options) {
+            if (entry.textField.mouseClicked(mouseX, mouseY, eventButton)) {
+                selected = options.indexOf(entry);
+                return true;
+            }
         }
-        return handled || super.mouseClicked(mouseX, mouseY, eventButton);
+        return super.mouseClicked(mouseX, mouseY, eventButton);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button)
-    {
-        if (selected > -1)
-        {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (selected > -1) {
             selected = -1;
             KeyBinding.resetMapping();
         }
@@ -79,16 +72,12 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
-    {
-        if (button == 0)
-        {
-            if (mouseX > xScrollBar && mouseX < xScrollBar + scrollBarSize && mouseY > yStart && mouseY < yStart + ySize)
-            {
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (button == 0) {
+            if (mouseX > xScrollBar && mouseX < xScrollBar + scrollBarSize && mouseY > yStart && mouseY < yStart + ySize) {
                 int yScrollMax = ySize - scrollBarSize;
                 int yScrollExtra = getScrollHeight() - ySize;
-                if (yScrollExtra > 0)
-                {
+                if (yScrollExtra > 0) {
                     float percExtra = Math.min((float) yScrollExtra / (float) yScrollMax, 1.0F);
                     int yStartMax = (int) (scrollBarSize * 0.5F + (yScrollMax * (1.0F - percExtra) * 0.5F));
                     int yEndMax = (int) (yScrollMax * Math.min(percExtra, 1.0F));
@@ -100,24 +89,23 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
     }
 
     @Override
-    protected boolean isSelected(int i) {return false;}
+    protected boolean isSelected(int i) {
+        return false;
+    }
 
     @Override
-    protected void drawBackground(MatrixStack matrixStack, Tessellator tess, int mouseX, int mouseY, float partialTicks)
-    {
+    protected void drawBackground(MatrixStack matrixStack, Tessellator tess, int mouseX, int mouseY, float partialTicks) {
         config.drawBackgroundLayer(matrixStack);
     }
 
     @Override
-    protected void drawForeground(MatrixStack matrixStack, Tessellator tess, int mouseX, int mouseY, float partialTicks)
-    {
+    protected void drawForeground(MatrixStack matrixStack, Tessellator tess, int mouseX, int mouseY, float partialTicks) {
         config.drawForegroundLayer(matrixStack);
         config.drawButtons(matrixStack, mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mX, int mY, float f)
-    {
+    public void render(MatrixStack matrixStack, int mX, int mY, float f) {
         mouseX = mX;
         mouseY = mY;
         xStart = config.xStart + 169;
@@ -128,12 +116,10 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
     }
 
     @Override
-    protected void drawScrollBar(MatrixStack matrixStack, Tessellator tessellator, int mouseX, int mouseY, float partialTicks)
-    {
+    protected void drawScrollBar(MatrixStack matrixStack, Tessellator tessellator, int mouseX, int mouseY, float partialTicks) {
         int yScrollMax = ySize - scrollBarSize;
         int yScrollExtra = getScrollHeight() - ySize;
-        if (yScrollExtra > 0)
-        {
+        if (yScrollExtra > 0) {
             float percScrolled = scrollPos / yScrollExtra;
             float percExtra = MathHelper.clamp((float) yScrollExtra / (float) yScrollMax, 0.0F, 1.0F);
             int yStartMax = (int) (yScrollMax * percExtra * percScrolled);
@@ -144,8 +130,7 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
     }
 
     @Override
-    protected void drawSlotPre(MatrixStack matrixStack, Tessellator tessellator, int xPosition, int yPosition, int slot)
-    {
+    protected void drawSlotPre(MatrixStack matrixStack, Tessellator tessellator, int xPosition, int yPosition, int slot) {
         if (getSize() == 0) return;
         xPosition -= 20;
 
@@ -156,7 +141,7 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
         if (mc.font.width(name) > xSize + 18)
             name = mc.font.plainSubstrByWidth(name, xSize + 18) + "...";
         int stringWidth = mc.font.width(name);
-        config.drawString(matrixStack, mc.font, name, xPosition - stringWidth + 15, yPosition + 3, 0xFFFFFFFF);
+        AbstractGui.drawString(matrixStack, mc.font, name, xPosition - stringWidth + 15, yPosition + 3, 0xFFFFFFFF);
 
         entry.textField.xPos = xPosition + 20;
         entry.textField.yPos = yPosition;
@@ -164,8 +149,7 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
     }
 
     @Override
-    protected void drawSlotPost(MatrixStack matrixStack, Tessellator tessellator, int xPosition, int yPosition, int slot)
-    {
+    protected void drawSlotPost(MatrixStack matrixStack, Tessellator tessellator, int xPosition, int yPosition, int slot) {
         if (getSize() == 0) return;
         xPosition -= 20;
         GuiConfigEntry entry = options.get(slot);
@@ -181,13 +165,12 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
 
         boolean hover_string = mouseX >= hover_x_min && mouseY >= hover_y_min && mouseX < hover_x_max && mouseY < hover_y_max;
 
-        if (hover_string)
-        {
+        if (hover_string) {
             RenderSystem.disableLighting();
             RenderSystem.disableDepthTest();
             int l2 = 0;
             int k2 = hover_y_min - 10;
-            String[] lines = (entry.name + NEW_LINE + NEW_LINE + ConfigManager.formatCommentForGui(entry.comment, entry.defaultValue, entry.type, entry.showMin, entry.showMax, entry.min, entry.max) + (entry.requiresRestart ? NEW_LINE + TextFormatting.RED + "" + TextFormatting.BOLD + "Requires full game restart for changes to take effect" : entry.requiresWorldRestart ? NEW_LINE + TextFormatting.RED + "" + TextFormatting.BOLD + "Requires world reload for changes to take effect" : "") + (entry.hasPermission ? "" : NEW_LINE + TextFormatting.RED + "" + TextFormatting.BOLD + "Higher permission level required") + NEW_LINE + NEW_LINE + TextFormatting.GRAY + "" + TextFormatting.ITALIC + "On Text Box" + NEW_LINE + TextFormatting.GRAY + "" + TextFormatting.ITALIC + (entry.type == 7 ? "Shift & Left Click: Switch to true/false" : "Shift & Left Click: Reset to original value") + NEW_LINE + TextFormatting.GRAY + "" + TextFormatting.ITALIC + "Shift & Right Click: Reset to default value" + NEW_LINE + TextFormatting.BLUE + "" + TextFormatting.ITALIC + entry.registryName).split("\\n");
+            String[] lines = (entry.name + NEW_LINE + NEW_LINE + ConfigManager.formatCommentForGui(entry.comment, entry.defaultValue, entry.type, entry.showMin, entry.showMax, entry.min, entry.max) + (entry.requiresRestart ? NEW_LINE + TextFormatting.RED + TextFormatting.BOLD + "Requires full game restart for changes to take effect" : entry.requiresWorldRestart ? NEW_LINE + TextFormatting.RED + TextFormatting.BOLD + "Requires world reload for changes to take effect" : "") + (entry.hasPermission ? "" : NEW_LINE + TextFormatting.RED + TextFormatting.BOLD + "Higher permission level required") + NEW_LINE + NEW_LINE + TextFormatting.GRAY + TextFormatting.ITALIC + "On Text Box" + NEW_LINE + TextFormatting.GRAY + TextFormatting.ITALIC + (entry.type == 7 ? "Shift & Left Click: Switch to true/false" : "Shift & Left Click: Reset to original value") + NEW_LINE + TextFormatting.GRAY + TextFormatting.ITALIC + "Shift & Right Click: Reset to default value" + NEW_LINE + TextFormatting.BLUE + TextFormatting.ITALIC + entry.registryName).split("\\n");
             for (int i = 0; i < lines.length; i++)
                 if (mc.font.width(lines[i]) > l2)
                     l2 = mc.font.width(lines[i]);
@@ -198,34 +181,25 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
         }
     }
 
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
-    {
-        if (selected > -1 && selected < options.size())
-        {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (selected > -1 && selected < options.size()) {
             GuiConfigEntry entry = options.get(selected);
-            if (entry.textField.isFocused())
-            {
+            if (entry.textField.isFocused()) {
                 entry.textField.textboxKeyTyped((char) 0, keyCode);
                 entry.textField.updateChange();
-                if (keyCode == 257)
-                {
+                if (keyCode == 257) {
                     selected = -1;
                     entry.textField.setFocused(false);
                     return true;
-                }
-                else if (keyCode == 256)
-                {
+                } else if (keyCode == 256) {
                     selected = -1;
                     entry.textField.setFocused(false);
                     return true;
                 }
                 return true;
             }
-        }
-        else
-        {
-            if (getScrollHeight() - ySize > 0)
-            {
+        } else {
+            if (getScrollHeight() - ySize > 0) {
                 int height = getScrollHeight();
                 if (keyCode == 265)
                     adjustScrollPos(-height / getSize());
@@ -245,13 +219,10 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
         return true;
     }
 
-    public boolean charTyped(char c, int modifiers)
-    {
-        if (selected > -1 && selected < options.size())
-        {
+    public boolean charTyped(char c, int modifiers) {
+        if (selected > -1 && selected < options.size()) {
             GuiConfigEntry entry = options.get(selected);
-            if (entry.textField.isFocused())
-            {
+            if (entry.textField.isFocused()) {
                 entry.textField.textboxKeyTyped(c, 0);
                 entry.textField.updateChange();
                 return true;
@@ -261,8 +232,7 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
     }
 
     @SuppressWarnings("deprecation")
-    protected void fillGradient(MatrixStack matrixStack, int par1, int par2, int par3, int par4, int par5, int par6)
-    {
+    protected void fillGradient(MatrixStack matrixStack, int par1, int par2, int par3, int par4, int par5, int par6) {
         float f = (float) (par5 >> 24 & 255) / 255.0F;
         float f1 = (float) (par5 >> 16 & 255) / 255.0F;
         float f2 = (float) (par5 >> 8 & 255) / 255.0F;
@@ -280,10 +250,10 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
         BufferBuilder vertexbuffer = tessellator.getBuilder();
 
         vertexbuffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
-        vertexbuffer.vertex((double) par3, (double) par2, (double) 0).color(f1, f2, f3, f).endVertex();
-        vertexbuffer.vertex((double) par1, (double) par2, (double) 0).color(f1, f2, f3, f).endVertex();
-        vertexbuffer.vertex((double) par1, (double) par4, (double) 0).color(f5, f6, f7, f4).endVertex();
-        vertexbuffer.vertex((double) par3, (double) par4, (double) 0).color(f5, f6, f7, f4).endVertex();
+        vertexbuffer.vertex(par3, par2, 0).color(f1, f2, f3, f).endVertex();
+        vertexbuffer.vertex(par1, par2, 0).color(f1, f2, f3, f).endVertex();
+        vertexbuffer.vertex(par1, par4, 0).color(f5, f6, f7, f4).endVertex();
+        vertexbuffer.vertex(par3, par4, 0).color(f5, f6, f7, f4).endVertex();
         tessellator.end();
 
         RenderSystem.shadeModel(7424);
@@ -292,8 +262,7 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
         RenderSystem.enableTexture();
     }
 
-    public void populateData()
-    {
+    public void populateData() {
         scrollPos = 0.0F;
         options.clear();
         ConfigInstance config = configs.get(GuiConfigEditor.curIndex);
@@ -302,14 +271,13 @@ public class GuiConfigScrollPanel extends GuiScrollPanel
             config.getFields().forEach(field ->
             {
                 boolean hasPermission = field.hasPermission();
-                if ((!(!hasPermission && field.hide) || hasPermission) && (field.enforce && (GuiConfigEditor.serverMode || ConfigManager.isSinglePlayer()) || !field.enforce))
+                if ((!(!hasPermission && field.hide) || hasPermission) && (!field.enforce || (GuiConfigEditor.serverMode || ConfigManager.isSinglePlayer())))
                     options.add(new GuiConfigEntry(field, GuiConfigEditor.serverMode));
             });
     }
 
     @Override
-    protected int getSize()
-    {
+    protected int getSize() {
         return options.size();
     }
 }

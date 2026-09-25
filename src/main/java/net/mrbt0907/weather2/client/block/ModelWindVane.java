@@ -2,16 +2,15 @@ package net.mrbt0907.weather2.client.block;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.Model;
 import net.minecraft.client.renderer.model.ModelRenderer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3f;
 
 import java.util.function.Function;
 
-public class ModelWindVane extends Model
-{
+public class ModelWindVane extends Model {
     private final ModelRenderer bottom;
     private final ModelRenderer cross;
     private final ModelRenderer cross2;
@@ -39,13 +38,11 @@ public class ModelWindVane extends Model
     public float offsetInvX = 0;
     public float offsetInvY = 0;
 
-    public ModelWindVane()
-    {
+    public ModelWindVane() {
         this(RenderType::entityCutoutNoCull);
     }
 
-    public ModelWindVane(Function<ResourceLocation, RenderType> renderTypeFunc)
-    {
+    public ModelWindVane(Function<ResourceLocation, RenderType> renderTypeFunc) {
         super(renderTypeFunc);
 
         texWidth = 64;
@@ -166,8 +163,7 @@ public class ModelWindVane extends Model
 
     public void renderWithRotation(MatrixStack matrixStack, IVertexBuilder buffer, int packedLight,
                                    int packedOverlay, float red, float green, float blue, float alpha,
-                                   float topPieceRotation)
-    {
+                                   float topPieceRotation) {
         matrixStack.pushPose();
 
         matrixStack.mulPose(Vector3f.YP.rotationDegrees(180));
@@ -200,8 +196,7 @@ public class ModelWindVane extends Model
 
     @Override
     public void renderToBuffer(MatrixStack matrixStack, IVertexBuilder buffer, int packedLight,
-                               int packedOverlay, float red, float green, float blue, float alpha)
-    {
+                               int packedOverlay, float red, float green, float blue, float alpha) {
         renderWithRotation(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, 0F);
     }
 }

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "tag": "forge:ingots/iron"
+    },
+    "B": {
+      "tag": "forge:dusts/redstone"
+    },
+    "C": {
+      "tag": "forge:glass_panes"
+    },
+    "D": {
+      "tag": "forge:ingots/gold"
+    }
+  },
+  "result": {
+    "item": "weather2:cpu_0"
+  }
+}

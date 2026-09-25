@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "weather2:bulb_dry"
+    ]
+  },
+  "criteria": {
+    "has_bulb": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "weather2:bulb"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "weather2:bulb_dry"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_bulb",
+      "has_the_recipe"
+    ]
+  ]
+}

@@ -13,10 +13,9 @@ import net.mrbt0907.weather2.block.*;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
-public class BlockRegistry
-{
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Weather2.MODID);
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Weather2.MODID);
+public class BlockRegistry {
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Weather2.OLD_MODID);
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Weather2.OLD_MODID);
 
     public static final RegistryObject<Block> wire = registerBlock("wire", () -> new BlockSensor());
     public static final RegistryObject<Block> radio = registerBlock("radio_transmitter", () -> new BlockRadio(Material.CLAY));
@@ -48,37 +47,33 @@ public class BlockRegistry
     public static final RegistryObject<Block> emergency_siren_manual = registerBlock("tornado_siren_manual", () -> new BlockTSirenManual());
     public static final RegistryObject<Block> emergency_siren = registerBlock("tornado_siren", () -> new BlockSiren());
     public static final RegistryObject<Block> weather_radar = registerBlock("weather_forecast", () -> new BlockNewRadar(0));
+    public static final RegistryObject<Block> computer_radar = registerBlock("computer_radar", () -> new BlockComputerRadar());
     public static final RegistryObject<Block> weather_constructor = registerBlock("weather_machine", () -> new BlockWeatherConstructor());
     public static final RegistryObject<Block> weather_deflector = registerBlock("weather_deflector", () -> new BlockWeatherDeflector());
     public static final RegistryObject<Block> sand_layer = registerBlockNoCreativeTab("sand_layer", () -> new BlockSandLayer());
 
-    private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block)
-    {
+    private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);
         registerBlockItem(name, toReturn);
         return toReturn;
     }
 
-    private static <T extends Block> RegistryObject<T> registerBlockNoItem(String name, Supplier<T> block)
-    {
+    private static <T extends Block> RegistryObject<T> registerBlockNoItem(String name, Supplier<T> block) {
         return BLOCKS.register(name, block);
     }
 
-    private static <T extends Block> RegistryObject<T> registerBlockNoCreativeTab(String name, Supplier<T> block)
-    {
+    private static <T extends Block> RegistryObject<T> registerBlockNoCreativeTab(String name, Supplier<T> block) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);
         registerBlockItemNoTab(name, toReturn);
         return toReturn;
     }
 
-    private static <T extends Block> void registerBlockItem(String name, RegistryObject<T> block)
-    {
+    private static <T extends Block> void registerBlockItem(String name, RegistryObject<T> block) {
         ITEMS.register(name, () -> new BlockItem(block.get(),
                 new Item.Properties().tab(Weather2.TAB)));
     }
 
-    private static <T extends Block> void registerBlockItemNoTab(String name, RegistryObject<T> block)
-    {
+    private static <T extends Block> void registerBlockItemNoTab(String name, RegistryObject<T> block) {
         ITEMS.register(name, () -> new BlockItem(block.get(),
                 new Item.Properties()));
     }

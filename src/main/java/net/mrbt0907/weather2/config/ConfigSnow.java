@@ -10,7 +10,7 @@ import java.io.File;
 
 
 public class ConfigSnow implements IConfigEX {
-
+    //snow
     @Enforce
     @Comment("Should snow build up in a snowstorm?")
     public static boolean Snow_PerformSnowfall = false;

@@ -38,8 +38,10 @@ public class ConfigMisc implements IConfigEX {
     @DoubleRange(min = 0.0D)
     @Comment("How far do Pulse Doppler Radars sense storms?")
     public static double pulse_doppler_radar_range = 2048.0D;
-
-
+    @Enforce
+    @DoubleRange(min = 0.0D)
+    @Comment("How far do Computerized Radars sense storms?")
+    public static double computer_radar_range = 2048.0D;
     @Hidden
     @Enforce
     @IntegerRange(min = 1)
@@ -157,4 +159,13 @@ public class ConfigMisc implements IConfigEX {
     public void onValueChanged(String variable, Object oldValue, Object newValue) {
     }
 
+    public static boolean isDisabled(String configKey) {
+        try {
+            java.lang.reflect.Field field = ConfigMisc.class.getField(configKey);
+            return field.getBoolean(null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Weather2.warn("ConfigMisc : no such config field '" + configKey + "' — check the key used in the recipe condition JSON.");
+            return false;
+        }
+    }
 }

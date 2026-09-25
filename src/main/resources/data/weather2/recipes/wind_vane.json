@@ -1,0 +1,32 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "key": "disable_wind_vane",
+          "type": "weather2:config_enabled"
+        }
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": [
+          "X X",
+          "XDX",
+          "X X"
+        ],
+        "key": {
+          "X": {
+            "item": "weather2:weather_item"
+          },
+          "D": {
+            "tag": "forge:dusts/redstone"
+          }
+        },
+        "result": {
+          "item": "weather2:wind_vane"
+        }
+      }
+    }
+  ]
+}

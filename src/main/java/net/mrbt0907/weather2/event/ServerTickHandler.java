@@ -8,7 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
-import net.modconfig.ConfigMod;
+import net.mrbt0907.configex.ConfigManager;
 import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.config.ConfigMisc;
 import net.mrbt0907.weather2.config.EZConfigParser;
@@ -46,7 +46,6 @@ public class ServerTickHandler {
         for (ServerWorld dim : worlds) {
             RegistryKey<World> dimension = dim.dimension();
             ResourceLocation dimLocation = dimension.location();
-            String dimPath = dimLocation.getPath();
             String dimFullPath = dimLocation.toString();
 
             EntityMovingBlock.updateEntities(dim);
@@ -82,7 +81,7 @@ public class ServerTickHandler {
                 ConfigMisc.overcast_mode = true;
                 Weather2.debug("detected Aesthetic_Only_Mode on, setting overcast mode on");
                 EZConfigParser.setOvercastModeServerSide(ConfigMisc.overcast_mode);
-                ConfigMod.forceSaveAllFilesFromRuntimeSettings();
+                ConfigManager.save();
                 ServerTickHandler.syncServerConfigToClient();
             }
         }
@@ -131,7 +130,7 @@ public class ServerTickHandler {
 
         EntityMovingBlock.resetEntities();
 
-        if (ServerTickHandler.dimensionSystems.size() > 0) {
+        if (!ServerTickHandler.dimensionSystems.isEmpty()) {
             Weather2.debug("Weather2: reset state failed to manually clear lists, dimensionSystems.size(): " + ServerTickHandler.dimensionSystems.size() + " - forcing a full clear of lists");
             ServerTickHandler.dimensionSystems.clear();
         }
@@ -151,12 +150,8 @@ public class ServerTickHandler {
     }
 
     public static void syncServerConfigToClient() {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null) return;
-
-        for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
-            syncServerConfigToClientPlayer(player);
-        }
+        CompoundNBT data = new CompoundNBT();
+        PacketEZGUI.apply(data);
     }
 
     public static void syncServerConfigToClientPlayer(ServerPlayerEntity player) {

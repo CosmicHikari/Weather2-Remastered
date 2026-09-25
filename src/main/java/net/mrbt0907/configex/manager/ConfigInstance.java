@@ -1,14 +1,6 @@
 package net.mrbt0907.configex.manager;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.config.ModConfig;
 import net.mrbt0907.configex.ConfigManager;
 import net.mrbt0907.configex.ConfigModEX;
 import net.mrbt0907.configex.api.ConfigAnnotations.Ignore;
@@ -16,20 +8,25 @@ import net.mrbt0907.configex.api.IConfigEX;
 import net.mrbt0907.configex.api.IConfigEX.Phase;
 import net.mrbt0907.weather2.util.StringUtils;
 
-public class ConfigInstance
-{
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ConfigInstance {
     public final IConfigEX config;
-    private final Map<String, FieldInstance> fields = new LinkedHashMap<String, FieldInstance>();
     public final String name;
     public final String registryName;
     public final String description;
     public final String saveLocation;
     public final com.electronwill.nightconfig.core.file.CommentedFileConfig configuration;
     public final File fileLocation;
+    private final Map<String, FieldInstance> fields = new LinkedHashMap<String, FieldInstance>();
     private int variablesChanged;
 
-    public ConfigInstance(IConfigEX config)
-    {
+    public ConfigInstance(IConfigEX config) {
         this.config = config;
         name = config.getName();
         registryName = StringUtils.parseID(name);
@@ -51,24 +48,21 @@ public class ConfigInstance
         initConfig();
     }
 
-    public void initConfig()
-    {
+    public void initConfig() {
         ConfigModEX.debug("Initializing config " + registryName + "...");
         FieldInstance instance;
 
         fields.clear();
 
-        for (Field field : config.getClass().getFields())
-        {
-            if (field.isAnnotationPresent(Ignore.class))
-            {
+        for (Field field : config.getClass().getFields()) {
+            if (field.isAnnotationPresent(Ignore.class)) {
                 ConfigModEX.debug("Ignoring field " + field.getName());
                 continue;
             }
 
             instance = new FieldInstance(config, field);
             fields.put(instance.registryName, instance);
-        };
+        }
 
 
         readConfigFile();
@@ -78,13 +72,11 @@ public class ConfigInstance
         ConfigModEX.debug("Config " + registryName + " has initialized successfully!");
     }
 
-    public void writeNBT(CompoundNBT nbt)
-    {
+    public void writeNBT(CompoundNBT nbt) {
         ConfigModEX.debug("Writing fields from " + name + " to nbt...");
         CompoundNBT nbtField;
 
-        for (FieldInstance field : fields.values())
-        {
+        for (FieldInstance field : fields.values()) {
             nbtField = new CompoundNBT();
             nbtField.putString("value", String.valueOf(field.getServerValue()));
             nbt.put(field.registryName, nbtField);
@@ -93,30 +85,25 @@ public class ConfigInstance
         ConfigModEX.debug("Write complete!");
     }
 
-    public void readNBT(CompoundNBT nbt)
-    {
+    public void readNBT(CompoundNBT nbt) {
         ConfigModEX.debug("Reading fields from " + (ConfigManager.isRemote ? "the server" : "a client") + " to config " + name + "...");
         CompoundNBT nbtField;
         String value;
         boolean checkPerm = !ConfigManager.isRemote && nbt.hasUUID("player");
         boolean setServer = !ConfigManager.isRemote || !nbt.getBoolean("setClient");
-        int permission = ConfigManager.getPermissionLevel(nbt.getUUID("player"));
+        int permission = checkPerm ? ConfigManager.getPermissionLevel(nbt.getUUID("player")) : ConfigManager.getPermissionLevel();
         config.onConfigChanged(Phase.START, fields.size());
         variablesChanged = 0;
         for (FieldInstance field : fields.values())
-            if (nbt.contains(field.registryName))
-            {
-                if (checkPerm && !field.hasPermission(permission))
-                {
+            if (nbt.contains(field.registryName)) {
+                if (checkPerm && !field.hasPermission(permission)) {
                     ConfigModEX.warn("Rejecting value for " + field.registryName + " as the player does not have permission to change the value");
                     continue;
                 }
                 nbtField = nbt.getCompound(field.registryName);
                 value = nbtField.getString("value");
-                try
-                {
-                    switch(field.type)
-                    {
+                try {
+                    switch (field.type) {
                         case 1:
                             setField(field, Integer.valueOf(value), setServer);
                             break;
@@ -142,9 +129,7 @@ public class ConfigInstance
 
                     if (updateField(field, false))
                         variablesChanged++;
-                }
-                catch(Exception e)
-                {
+                } catch (Exception e) {
                     ConfigModEX.warn("Rejecting value for " + field.registryName + " as the value was unable to be set");
                     continue;
                 }
@@ -154,42 +139,35 @@ public class ConfigInstance
         variablesChanged = -1;
     }
 
-    public FieldInstance getField(String registryName)
-    {
+    public FieldInstance getField(String registryName) {
         return fields.get(registryName);
     }
 
-    public List<FieldInstance> getFields()
-    {
+    public List<FieldInstance> getFields() {
         return new ArrayList<FieldInstance>(fields.values());
     }
 
-    public boolean setField(FieldInstance field, Object value, boolean changeServerVariable)
-    {
+    public boolean setField(FieldInstance field, Object value, boolean changeServerVariable) {
         if (field == null)
             ConfigModEX.fatal(new NullPointerException("Field was null"));
 
-        if (ConfigManager.isRemote)
-        {
+        if (ConfigManager.isRemote) {
             if (changeServerVariable)
                 return field.setServerValue(value);
             else
                 return field.setClientValue(value);
-        }
-        else
+        } else
             return field.setServerValue(value);
     }
 
-    public void defaultField(FieldInstance field)
-    {
+    public void defaultField(FieldInstance field) {
         if (field == null)
             ConfigModEX.fatal(new NullPointerException("Field was null"));
 
         field.setToDefault();
     }
 
-    public boolean updateField(FieldInstance field, boolean fullSync)
-    {
+    public boolean updateField(FieldInstance field, boolean fullSync) {
         if (field == null)
             ConfigModEX.fatal(new NullPointerException("Field was null"));
 
@@ -201,45 +179,37 @@ public class ConfigInstance
 
         Object value = field.getRealCachedValue();
 
-        if (field.hasChanged)
-        {
+        if (field.hasChanged) {
             field.setRealValue();
-            if (variablesChanged < 0)
-            {
+            if (variablesChanged < 0) {
                 config.onConfigChanged(Phase.START, 1);
                 config.onValueChanged(field.name, value, ConfigManager.isRemote ? field.getClientValue() : field.getServerValue());
                 config.onConfigChanged(Phase.END, 1);
-            }
-            else
+            } else
                 config.onValueChanged(field.name, value, ConfigManager.isRemote ? field.getClientValue() : field.getServerValue());
             return true;
         }
         return false;
     }
 
-    public void updateAllFields(boolean fullSync)
-    {
-        if (fullSync)
-        {
+    public void updateAllFields(boolean fullSync) {
+        if (fullSync) {
             config.onConfigChanged(Phase.START, fields.size());
             variablesChanged = 0;
         }
 
-        for (FieldInstance field : fields.values())
-        {
+        for (FieldInstance field : fields.values()) {
             if (updateField(field, fullSync) && fullSync)
                 variablesChanged++;
         }
 
-        if (fullSync)
-        {
+        if (fullSync) {
             config.onConfigChanged(Phase.END, variablesChanged);
             variablesChanged = -1;
         }
     }
 
-    public void writeConfigFile(boolean wipeFile)
-    {
+    public void writeConfigFile(boolean wipeFile) {
         if (wipeFile && fileLocation.exists()) fileLocation.delete();
         ConfigModEX.debug("Config " + registryName + " is writing to file " + ConfigModEX.getGameFolder() + "config/" + saveLocation + ".toml" + "...");
         fields.forEach((name, field) ->
@@ -253,8 +223,7 @@ public class ConfigInstance
         ConfigModEX.debug("Saved config " + registryName + " successfully!");
     }
 
-    public void readConfigFile()
-    {
+    public void readConfigFile() {
         ConfigModEX.debug("Config " + registryName + " is reading from file " + ConfigModEX.getGameFolder() + "config/" + saveLocation + ".toml" + "...");
         configuration.load();
         config.onConfigChanged(Phase.START, fields.size());
@@ -265,11 +234,10 @@ public class ConfigInstance
 
             String configPath = registryName + "." + field.displayName;
 
-            switch(field.type)
-            {
+            switch (field.type) {
                 case 1:
                     if (!field.hasConfigValue())
-                        field.setConfigValue(configuration, (int) field.defaultValue, ConfigManager.formatCommentForCFG(field));
+                        field.setConfigValue(configuration, field.defaultValue, ConfigManager.formatCommentForCFG(field));
 
                     setField(field, configuration.getIntOrElse(configPath, (int) field.defaultValue), false);
                     if (updateField(field, false))
@@ -277,7 +245,7 @@ public class ConfigInstance
                     break;
                 case 2:
                     if (!field.hasConfigValue())
-                        field.setConfigValue(configuration, (short) field.defaultValue, ConfigManager.formatCommentForCFG(field));
+                        field.setConfigValue(configuration, field.defaultValue, ConfigManager.formatCommentForCFG(field));
 
                     setField(field, (short) configuration.getIntOrElse(configPath, (short) field.defaultValue), false);
                     if (updateField(field, false))
@@ -285,7 +253,7 @@ public class ConfigInstance
                     break;
                 case 3:
                     if (!field.hasConfigValue())
-                        field.setConfigValue(configuration, (long) field.defaultValue, ConfigManager.formatCommentForCFG(field));
+                        field.setConfigValue(configuration, field.defaultValue, ConfigManager.formatCommentForCFG(field));
 
                     setField(field, configuration.getLongOrElse(configPath, (long) field.defaultValue), false);
                     if (updateField(field, false))
@@ -293,15 +261,15 @@ public class ConfigInstance
                     break;
                 case 4:
                     if (!field.hasConfigValue())
-                        field.setConfigValue(configuration, (float) field.defaultValue, ConfigManager.formatCommentForCFG(field));
+                        field.setConfigValue(configuration, field.defaultValue, ConfigManager.formatCommentForCFG(field));
 
-                    setField(field, (float) configuration.get(configPath), false);
+                    setField(field, configuration.get(configPath), false);
                     if (updateField(field, false))
                         variablesChanged++;
                     break;
                 case 5:
                     if (!field.hasConfigValue())
-                        field.setConfigValue(configuration, (double) field.defaultValue, ConfigManager.formatCommentForCFG(field));
+                        field.setConfigValue(configuration, field.defaultValue, ConfigManager.formatCommentForCFG(field));
 
                     setField(field, configuration.get(configPath), false);
                     if (updateField(field, false))
@@ -309,7 +277,7 @@ public class ConfigInstance
                     break;
                 case 6:
                     if (!field.hasConfigValue())
-                        field.setConfigValue(configuration, (String) field.defaultValue, ConfigManager.formatCommentForCFG(field));
+                        field.setConfigValue(configuration, field.defaultValue, ConfigManager.formatCommentForCFG(field));
 
                     setField(field, configuration.getOrElse(configPath, (String) field.defaultValue), false);
                     if (updateField(field, false))
@@ -317,16 +285,14 @@ public class ConfigInstance
                     break;
                 case 7:
                     if (!field.hasConfigValue())
-                        field.setConfigValue(configuration, (boolean) field.defaultValue, ConfigManager.formatCommentForCFG(field));
+                        field.setConfigValue(configuration, field.defaultValue, ConfigManager.formatCommentForCFG(field));
 
                     setField(field, configuration.getOrElse(configPath, (boolean) field.defaultValue), false);
                     if (updateField(field, false))
                         variablesChanged++;
                     break;
-                default:
-                {
+                default: {
                     ConfigModEX.warn("Field " + field.registryName + " is using an unsupported type. Skipping...");
-                    return;
                 }
             }
         });
@@ -336,18 +302,15 @@ public class ConfigInstance
         variablesChanged = -1;
     }
 
-    public int size()
-    {
+    public int size() {
         return fields.size();
     }
 
-    public void setToDefault()
-    {
+    public void setToDefault() {
         fields.forEach((registryName, field) -> field.setToDefault());
     }
 
-    public void reset(boolean fullReset)
-    {
+    public void reset(boolean fullReset) {
         config.onConfigChanged(Phase.START, fields.size());
         variablesChanged = 0;
         fields.forEach((name, field) ->
@@ -357,8 +320,7 @@ public class ConfigInstance
                 field.reset();
             else
                 field.setRealValue();
-            if (value != field.getRealCachedValue() || !fullReset)
-            {
+            if (value != field.getRealCachedValue() || !fullReset) {
                 config.onValueChanged(field.name, value, field.getRealCachedValue());
                 variablesChanged++;
             }

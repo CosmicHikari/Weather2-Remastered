@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "coroutillegacy:block/repairing_block"
+    }
+  }
+}

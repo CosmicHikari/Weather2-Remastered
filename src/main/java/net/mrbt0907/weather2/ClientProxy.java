@@ -1,12 +1,19 @@
 package net.mrbt0907.weather2;
 
+import net.corosus.extendedrenderer.ExtendedRenderer;
+import net.corosus.extendedrenderer.shader.IShaderListener;
+import net.corosus.extendedrenderer.shader.ShaderListenerRegistry;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.LightningBoltRenderer;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.mrbt0907.configex.ConfigManager;
+import net.mrbt0907.configex.gui.GuiConfigEditor;
 import net.mrbt0907.weather2.api.WeatherAPI;
 import net.mrbt0907.weather2.client.block.*;
 import net.mrbt0907.weather2.client.entity.RenderFlyingBlock;
@@ -14,60 +21,58 @@ import net.mrbt0907.weather2.client.event.ClientTickHandler;
 import net.mrbt0907.weather2.client.foliage.FoliageEnhancerShader;
 import net.mrbt0907.weather2.client.gui.GuiWeather;
 import net.mrbt0907.weather2.client.rendering.manager.ParticleManagerEX;
-import net.mrbt0907.weather2.client.sound.SoundHandler;
 import net.mrbt0907.weather2.config.ConfigClient;
 import net.mrbt0907.weather2.registry.EntityRegistry;
 import net.mrbt0907.weather2.registry.TileEntityRegistry;
 import net.mrbt0907.weather2.util.WeatherUtil;
-import net.extendedrenderer.ExtendedRenderer;
-import net.extendedrenderer.shader.IShaderListener;
-import net.extendedrenderer.shader.ShaderListenerRegistry;
-import net.minecraft.client.Minecraft;
 
 @OnlyIn(Dist.CLIENT)
-public class ClientProxy extends CommonProxy
-{
+public class ClientProxy extends CommonProxy {
     public static GuiWeather guiWeather;
     public static ClientTickHandler clientTickHandler;
 
-    public ClientProxy()
-    {
+    public ClientProxy() {
         ClientProxy.clientTickHandler = new ClientTickHandler();
     }
 
     @Override
-    public void clientSetup()
-    {
+    public void clientSetup() {
         super.clientSetup();
 
+
         MinecraftForge.EVENT_BUS.register(ClientProxy.clientTickHandler);
-        MinecraftForge.EVENT_BUS.register(SoundHandler.class);
+
         initEntities();
         initTileEntities();
+        ModLoadingContext.get().registerExtensionPoint(
+                ExtensionPoint.CONFIGGUIFACTORY,
+                () -> (minecraft, screen) -> new GuiConfigEditor()
+        );
     }
 
     @Override
-    public void commonSetup()
-    {
+    public void commonSetup() {
         super.commonSetup();
-        ShaderListenerRegistry.addListener(new IShaderListener()
-        {
+        ShaderListenerRegistry.addListener(new IShaderListener() {
             @Override
-            public void init() { FoliageEnhancerShader.shadersInit(); }
+            public void init() {
+                FoliageEnhancerShader.shadersInit();
+            }
+
             @Override
-            public void reset() { FoliageEnhancerShader.shadersReset(); }
+            public void reset() {
+                FoliageEnhancerShader.shadersReset();
+            }
         });
     }
 
     @Override
-    public void postInit()
-    {
+    public void postInit() {
         super.postInit();
         ClientProxy.guiWeather = new GuiWeather();
         WeatherAPI.refreshRenders(true);
         MinecraftForge.EVENT_BUS.register(ClientProxy.guiWeather);
-        if (WeatherUtil.isAprilFoolsDay())
-        {
+        if (WeatherUtil.isAprilFoolsDay()) {
             ConfigClient.particle_renderer = "2";
             ConfigManager.save("Weather2 Remastered - Client");
         }
@@ -78,8 +83,7 @@ public class ClientProxy extends CommonProxy
         );
     }
 
-    private void initEntities()
-    {
+    private void initEntities() {
         RenderingRegistry.registerEntityRenderingHandler(
                 EntityRegistry.WEATHER_HAIL.get(),
                 manager -> new RenderFlyingBlock(manager, net.minecraft.block.Blocks.ICE)
@@ -94,8 +98,7 @@ public class ClientProxy extends CommonProxy
         );
     }
 
-    private void initTileEntities()
-    {
+    private void initTileEntities() {
         ClientRegistry.bindTileEntityRenderer(
                 TileEntityRegistry.TORNADO_SIREN_TILE.get(),
                 RenderSiren::new

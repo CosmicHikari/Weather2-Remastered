@@ -1,6 +1,6 @@
 {
-	"parent": "item/handheld",
-	"textures": {
-		"layer0": "weather2:items/antenna_0"
-	}
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "weather2:item/antenna_0"
+  }
 }

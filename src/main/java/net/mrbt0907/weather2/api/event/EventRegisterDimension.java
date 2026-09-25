@@ -10,7 +10,7 @@ public class EventRegisterDimension extends Event {
     public final Map<Integer, Boolean> weatherList;
     public final Map<Integer, Boolean> effectList;
 
-    
+
     public EventRegisterDimension(Map<Integer, Boolean> weatherList, Map<Integer, Boolean> effectList) {
         this.weatherList = weatherList;
         this.effectList = effectList;

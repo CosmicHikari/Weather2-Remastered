@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " A ",
+    " B ",
+    " C "
+  ],
+  "key": {
+    "A": {
+      "tag": "forge:ingots/iron"
+    },
+    "B": {
+      "tag": "forge:sand"
+    },
+    "C": {
+      "item": "weather2:bulb"
+    }
+  },
+  "result": {
+    "item": "weather2:bulb_dry"
+  }
+}

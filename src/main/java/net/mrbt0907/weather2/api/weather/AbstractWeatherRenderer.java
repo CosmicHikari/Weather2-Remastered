@@ -1,8 +1,8 @@
 package net.mrbt0907.weather2.api.weather;
 
-import net.CoroUtil.config.ConfigCoroUtil;
-import net.extendedrenderer.ExtendedRenderer;
-import net.extendedrenderer.particle.behavior.ParticleBehaviorFog;
+import net.corosus.coroutillegacy.config.ConfigCoroUtilLegacy;
+import net.corosus.extendedrenderer.ExtendedRenderer;
+import net.corosus.extendedrenderer.particle.behavior.ParticleBehaviorFog;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.IngameMenuScreen;
 import net.minecraft.client.particle.Particle;
@@ -140,7 +140,7 @@ public abstract class AbstractWeatherRenderer {
 
     public final ExtendedEntityRotFX spawnParticle(double x, double y, double z, int parRenderOrder) {
         return spawnParticle(x, y, z, parRenderOrder,
-                ConfigCoroUtil.optimizedCloudRendering
+                ConfigCoroUtilLegacy.optimizedCloudRendering
                         ? net.mrbt0907.weather2.registry.ParticleRegistry.cloud32
                         : net.mrbt0907.weather2.registry.ParticleRegistry.cloud256);
     }
@@ -158,14 +158,14 @@ public abstract class AbstractWeatherRenderer {
                 (rand.nextDouble() - rand.nextDouble()) * speed,
                 tex);
         entityfx.pb = particleBehaviorFog;
-        entityfx.renderOrder = 0;
+        entityfx.renderOrder = parRenderOrder;
         particleBehaviorFog.initParticle(entityfx);
 
         entityfx.setCanCollide(false);
         entityfx.callUpdatePB = false;
         entityfx.setMaxAge((system.size / 2) + rand.nextInt(100));
 
-        if (ConfigCoroUtil.optimizedCloudRendering) {
+        if (ConfigCoroUtilLegacy.optimizedCloudRendering) {
             entityfx.setMaxAge(400);
         } else {
             entityfx.setMaxAge(480);
@@ -176,7 +176,7 @@ public abstract class AbstractWeatherRenderer {
         entityfx.setScale(entityfx.getScale() * (float) ConfigClient.particle_scale_mult);
         ExtendedRenderer.rotEffRenderer.addEffect(entityfx);
         particleBehaviorFog.particles.add(entityfx);
-        particles.add(entityfx);
+        this.particles.add(entityfx);
         if (ClientTickHandler.weatherManager != null)
             ClientTickHandler.weatherManager.addWeatherParticle(entityfx);
 

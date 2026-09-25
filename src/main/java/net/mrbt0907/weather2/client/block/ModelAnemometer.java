@@ -2,16 +2,15 @@ package net.mrbt0907.weather2.client.block;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.Model;
 import net.minecraft.client.renderer.model.ModelRenderer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3f;
 
 import java.util.function.Function;
 
-public class ModelAnemometer extends Model
-{
+public class ModelAnemometer extends Model {
     private final ModelRenderer Shape1;
     private final ModelRenderer Shape22;
     private final ModelRenderer Shape2;
@@ -46,13 +45,11 @@ public class ModelAnemometer extends Model
     public float offsetInvX = 0;
     public float offsetInvY = 0;
 
-    public ModelAnemometer()
-    {
+    public ModelAnemometer() {
         this(RenderType::entityCutoutNoCull);
     }
 
-    public ModelAnemometer(Function<ResourceLocation, RenderType> renderTypeFunc)
-    {
+    public ModelAnemometer(Function<ResourceLocation, RenderType> renderTypeFunc) {
         super(renderTypeFunc);
 
         texWidth = 64;
@@ -199,8 +196,7 @@ public class ModelAnemometer extends Model
 
     public void renderWithRotation(MatrixStack matrixStack, IVertexBuilder buffer, int packedLight,
                                    int packedOverlay, float red, float green, float blue, float alpha,
-                                   float topPieceRotation)
-    {
+                                   float topPieceRotation) {
         matrixStack.pushPose();
 
         Shape1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
@@ -235,13 +231,11 @@ public class ModelAnemometer extends Model
 
     @Override
     public void renderToBuffer(MatrixStack matrixStack, IVertexBuilder buffer, int packedLight,
-                               int packedOverlay, float red, float green, float blue, float alpha)
-    {
+                               int packedOverlay, float red, float green, float blue, float alpha) {
         renderWithRotation(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, 0F);
     }
 
-    private void setRotation(ModelRenderer model, float x, float y, float z)
-    {
+    private void setRotation(ModelRenderer model, float x, float y, float z) {
         model.xRot = x;
         model.yRot = y;
         model.zRot = z;

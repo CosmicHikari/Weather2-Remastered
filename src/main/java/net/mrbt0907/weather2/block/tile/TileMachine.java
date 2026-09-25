@@ -5,27 +5,22 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.mrbt0907.weather2.registry.TileEntityRegistry;
 
-public class TileMachine extends TileEntity implements ITickableTileEntity
-{
-    public TileMachine()
-    {
+public class TileMachine extends TileEntity implements ITickableTileEntity {
+    public TileMachine() {
         super(TileEntityRegistry.MACHINE_CASE_TILE.get());
     }
 
-    public TileMachine(TileEntityType<?> type)
-    {
+    public TileMachine(TileEntityType<?> type) {
         super(type);
     }
 
     @Override
-    public void tick()
-    {
+    public void tick() {
 
     }
 
     @Override
-    public void setRemoved()
-    {
+    public void setRemoved() {
         super.setRemoved();
     }
 }

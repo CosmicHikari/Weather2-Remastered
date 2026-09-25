@@ -1,7 +1,7 @@
 package net.mrbt0907.weather2.item;
 
-import net.extendedrenderer.particle.ParticleRegistry;
-import net.extendedrenderer.particle.behavior.ParticleBehaviorSandstorm;
+import net.corosus.extendedrenderer.particle.ParticleRegistry;
+import net.corosus.extendedrenderer.particle.behavior.ParticleBehaviorSandstorm;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.world.ClientWorld;
@@ -27,42 +27,14 @@ import net.mrbt0907.weather2.util.WeatherUtilBlock;
 
 import java.util.Random;
 
-public class ItemPocketSand extends Item
-{
+public class ItemPocketSand extends Item {
     @OnlyIn(Dist.CLIENT)
     public static ParticleBehaviorSandstorm particleBehavior;
 
-    public ItemPocketSand(Item.Properties properties)
-    {
+    public ItemPocketSand(Item.Properties properties) {
         super(properties);
     }
 
-    @Override
-    public ActionResult<ItemStack> use(World worldIn, PlayerEntity player, Hand hand) {
-
-        ItemStack itemStackIn = player.getItemInHand(hand);
-
-        if (!player.level.isClientSide) {
-
-            if (!player.abilities.instabuild)
-            {
-                if (itemStackIn.getCount() > 0) {
-                    itemStackIn.shrink(1);
-                }
-            }
-            int y = (int) player.getBoundingBox().minY;
-            double randSize = 20;
-            double randAngle = player.level.random.nextDouble() * randSize - player.level.random.nextDouble() * randSize;
-            WeatherUtilBlock.fillAgainstWallSmoothly(player.level, new Vec3(player.getX(), y + 0.5D, player.getZ()), player.yHeadRot + (float)randAngle, 15, 2, BlockRegistry.sand_layer.get(), 2);
-            particulateToClients(worldIn, player);
-        } else {
-            particulate(player.level, player);
-        }
-
-        return super.use(worldIn, player, hand);
-    }
-
-    
     @OnlyIn(Dist.CLIENT)
     public static void particulate(World world, LivingEntity player) {
 
@@ -89,9 +61,7 @@ public class ItemPocketSand extends Item
             randAngle = player.level.random.nextDouble() * randSize - player.level.random.nextDouble() * randSize;
 
 
-
             double vecY = (-Maths.fastSin(Math.toRadians(player.xRot + randAngle)) * (speed));
-
 
 
             part.setMotionX(vecX * xzAdj);
@@ -126,24 +96,6 @@ public class ItemPocketSand extends Item
 
     }
 
-    @Override
-    public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
-
-        if (worldIn.isClientSide) {
-            tickClient(stack, worldIn, entityIn, itemSlot, isSelected);
-        }
-
-        super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void tickClient(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
-        if (particleBehavior == null) {
-            particleBehavior = new ParticleBehaviorSandstorm(new Vec3(entityIn.blockPosition()).toVec3Coro());
-        }
-        particleBehavior.tickUpdateList();
-    }
-
     public static void particulateToClients(World world, LivingEntity player) {
         Weather2.PACKET_HANDLER.send(
                 PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(
@@ -170,5 +122,47 @@ public class ItemPocketSand extends Item
         if (player != null) {
             particulate(world, player);
         }
+    }
+
+    @Override
+    public ActionResult<ItemStack> use(World worldIn, PlayerEntity player, Hand hand) {
+
+        ItemStack itemStackIn = player.getItemInHand(hand);
+
+        if (!player.level.isClientSide) {
+
+            if (!player.abilities.instabuild) {
+                if (itemStackIn.getCount() > 0) {
+                    itemStackIn.shrink(1);
+                }
+            }
+            int y = (int) player.getBoundingBox().minY;
+            double randSize = 20;
+            double randAngle = player.level.random.nextDouble() * randSize - player.level.random.nextDouble() * randSize;
+            WeatherUtilBlock.fillAgainstWallSmoothly(player.level, new Vec3(player.getX(), y + 0.5D, player.getZ()), player.yHeadRot + (float) randAngle, 15, 2, BlockRegistry.sand_layer.get(), 2);
+            particulateToClients(worldIn, player);
+        } else {
+            particulate(player.level, player);
+        }
+
+        return super.use(worldIn, player, hand);
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+
+        if (worldIn.isClientSide) {
+            tickClient(stack, worldIn, entityIn, itemSlot, isSelected);
+        }
+
+        super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void tickClient(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+        if (particleBehavior == null) {
+            particleBehavior = new ParticleBehaviorSandstorm(new Vec3(entityIn.blockPosition()).toVec3Coro());
+        }
+        particleBehavior.tickUpdateList();
     }
 }

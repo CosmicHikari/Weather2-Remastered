@@ -1,0 +1,41 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "key": "disable_weather_radar",
+          "type": "weather2:config_enabled"
+        }
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": [
+          "AAA",
+          "BCB",
+          "DED"
+        ],
+        "key": {
+          "A": {
+            "item": "weather2:lcd_1"
+          },
+          "B": {
+            "item": "weather2:cpu_1"
+          },
+          "C": {
+            "item": "weather2:weather_forecast"
+          },
+          "D": {
+            "tag": "forge:ingots/iron"
+          },
+          "E": {
+            "item": "weather2:antenna_1"
+          }
+        },
+        "result": {
+          "item": "weather2:weather_forecast_2"
+        }
+      }
+    }
+  ]
+}

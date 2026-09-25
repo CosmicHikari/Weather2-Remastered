@@ -13,16 +13,16 @@ import java.util.Map;
 public class EventRegisterStormLogic extends Event {
     private final Map<ResourceLocation, Class<?>> registry = new LinkedHashMap<ResourceLocation, Class<?>>();
 
-    
+
     public EventRegisterStormLogic() {
     }
 
-    
+
     public Map<ResourceLocation, Class<?>> getRegistry() {
         return new LinkedHashMap<ResourceLocation, Class<?>>(registry);
     }
 
-    
+
     public void register(ResourceLocation id, Class<?> particleRenderer) {
         if (id == null)
             Weather2.debug("Failed to register a storm logic module as the id was null. Skipping...");

@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "tag": "forge:ingots/iron"
+    },
+    "B": {
+      "item": "minecraft:blaze_rod"
+    },
+    "C": {
+      "item": "weather2:bulb"
+    },
+    "D": {
+      "item": "weather2:machine_case"
+    },
+    "E": {
+      "tag": "forge:dusts/redstone"
+    }
+  },
+  "result": {
+    "item": "weather2:temperature_sensor"
+  }
+}

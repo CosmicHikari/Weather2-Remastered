@@ -12,27 +12,22 @@ import net.mrbt0907.weather2.item.ItemPocketSand;
 
 import java.util.function.Supplier;
 
-public class PacketPocketSand
-{
+public class PacketPocketSand {
     private final String playerName;
 
-    public PacketPocketSand(String playerName)
-    {
+    public PacketPocketSand(String playerName) {
         this.playerName = playerName;
     }
 
-    public static void encode(PacketPocketSand packet, PacketBuffer buffer)
-    {
+    public static void encode(PacketPocketSand packet, PacketBuffer buffer) {
         buffer.writeUtf(packet.playerName);
     }
 
-    public static PacketPocketSand decode(PacketBuffer buffer)
-    {
+    public static PacketPocketSand decode(PacketBuffer buffer) {
         return new PacketPocketSand(buffer.readUtf());
     }
 
-    public static void handle(PacketPocketSand packet, Supplier<NetworkEvent.Context> contextSupplier)
-    {
+    public static void handle(PacketPocketSand packet, Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
 
@@ -42,18 +37,15 @@ public class PacketPocketSand
     }
 
     @OnlyIn(Dist.CLIENT)
-    private static void handleClient(String username)
-    {
+    private static void handleClient(String username) {
         World world = Minecraft.getInstance().level;
-        if (world != null)
-        {
+        if (world != null) {
             PlayerEntity player = world.players().stream()
-                .filter(p -> p.getName().getString().equals(username))
-                .findFirst()
-                .orElse(null);
-            
-            if (player != null)
-            {
+                    .filter(p -> p.getName().getString().equals(username))
+                    .findFirst()
+                    .orElse(null);
+
+            if (player != null) {
 
                 ItemPocketSand.particulate(world, player);
             }

@@ -8,23 +8,19 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 
-public class ItemSensor extends ItemBase
-{
-    private int type;
+public class ItemSensor extends ItemBase {
+    private final int type;
 
-    public ItemSensor(int type, Item.Properties properties)
-    {
+    public ItemSensor(int type, Item.Properties properties) {
         super(properties);
         this.type = type;
     }
 
     @Override
-    public ActionResult<ItemStack> use(World worldIn, PlayerEntity playerIn, Hand handIn)
-    {
+    public ActionResult<ItemStack> use(World worldIn, PlayerEntity playerIn, Hand handIn) {
         ItemStack stack = playerIn.getItemInHand(handIn);
 
-        if (!worldIn.isClientSide && stack.getItem().equals(this))
-        {
+        if (!worldIn.isClientSide && stack.getItem().equals(this)) {
             CompoundNBT nbt = stack.getOrCreateTag();
             nbt.putBoolean("enabled", !nbt.getBoolean("enabled"));
         }
@@ -32,8 +28,7 @@ public class ItemSensor extends ItemBase
         return ActionResult.pass(stack);
     }
 
-    public int getType()
-    {
+    public int getType() {
         return type;
     }
 }

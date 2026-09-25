@@ -1,19 +1,16 @@
 package net.mrbt0907.configex.manager;
 
-import java.lang.reflect.Field;
-
-import org.apache.commons.lang3.text.WordUtils;
-
 import net.mrbt0907.configex.ConfigManager;
 import net.mrbt0907.configex.ConfigModEX;
 import net.mrbt0907.configex.api.ConfigAnnotations.*;
 import net.mrbt0907.configex.api.IConfigEX;
 import net.mrbt0907.weather2.util.Maths;
 import net.mrbt0907.weather2.util.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 
-public class FieldInstance
-{
-    protected final Field field;
+import java.lang.reflect.Field;
+
+public class FieldInstance {
     public final IConfigEX config;
     public final String name;
     public final String registryName;
@@ -24,21 +21,20 @@ public class FieldInstance
     public final boolean requiresRestart;
     public final boolean requiresWorldRestart;
     public final int permission;
-
     public final byte type;
     public final double min;
     public final double max;
     public final boolean showMin;
     public final boolean showMax;
     public final Object defaultValue;
+    protected final Field field;
+    public boolean hasChanged;
     private Object cachedValue;
     private Object clientValue;
     private Object serverValue;
     private String configPath;
-    public boolean hasChanged;
 
-    public FieldInstance(IConfigEX instance, Field field)
-    {
+    public FieldInstance(IConfigEX instance, Field field) {
         this.config = instance;
         this.field = field;
         name = field.getName();
@@ -53,13 +49,12 @@ public class FieldInstance
         requiresRestart = field.isAnnotationPresent(RequiresRestart.class);
         Permission permissionAnnotation = field.getAnnotation(Permission.class);
         permission = permissionAnnotation == null ? 3 : permissionAnnotation.value();
-        if(permission < 0 || permission > 4)
+        if (permission < 0 || permission > 4)
             ConfigModEX.fatal(new IndexOutOfBoundsException("Permission level " + permission + " does not exist"));
         defaultValue = cachedValue = getRealValue();
         type = (byte) (defaultValue instanceof Integer ? 1 : defaultValue instanceof Short ? 2 : defaultValue instanceof Long ? 3 : defaultValue instanceof Float ? 4 : defaultValue instanceof Double ? 5 : defaultValue instanceof String ? 6 : defaultValue instanceof Boolean ? 7 : 0);
 
-        switch(type)
-        {
+        switch (type) {
             case 1:
                 IntegerRange rangeI = field.getAnnotation(IntegerRange.class);
                 min = rangeI != null ? rangeI.min() : Integer.MIN_VALUE;
@@ -110,40 +105,44 @@ public class FieldInstance
         else
             serverValue = defaultValue;
         hasChanged = true;
-        ConfigModEX.debug("Successfully created a field instance for variable " + registryName + ": " + this.toString());
+        ConfigModEX.debug("Successfully created a field instance for variable " + registryName + ": " + this);
     }
 
-    public boolean hasPermission()
-    {
+    public boolean hasPermission() {
         return hasPermission(ConfigManager.getPermissionLevel());
     }
 
-    public boolean hasPermission(int permission)
-    {
+    public boolean hasPermission(int permission) {
         return this.permission == 0 || permission >= this.permission;
     }
 
-    public Object getRealValue()
-    {
-        try
-        {
+    public Object getRealValue() {
+        try {
             return field.get(config);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             ConfigModEX.warn("ConfigModEX has failed to get the value from field " + name);
             ConfigModEX.fatal(e);
             return null;
         }
     }
 
-    public Object getRealCachedValue()
-    {
+    private FieldInstance setRealValue(Object value) {
+        try {
+            field.set(config, value);
+            cachedValue = value;
+            hasChanged = false;
+        } catch (Exception e) {
+            ConfigModEX.warn("ConfigModEX has failed to set the value to field " + name);
+            ConfigModEX.fatal(e);
+        }
+        return this;
+    }
+
+    public Object getRealCachedValue() {
         return cachedValue;
     }
 
-    public FieldInstance setRealValue()
-    {
+    public FieldInstance setRealValue() {
         if (ConfigManager.isRemote)
             setRealValue(getClientValue());
         else
@@ -152,50 +151,27 @@ public class FieldInstance
         return this;
     }
 
-    private FieldInstance setRealValue(Object value)
-    {
-        try
-        {
-            field.set(config, value);
-            cachedValue = value;
-            hasChanged = false;
-        }
-        catch (Exception e)
-        {
-            ConfigModEX.warn("ConfigModEX has failed to set the value to field " + name);
-            ConfigModEX.fatal(e);
-        }
-        return this;
-    }
-
-    public Object getClientValue()
-    {
+    public Object getClientValue() {
         return (enforce || !hasPermission()) && serverValue != null ? serverValue : clientValue;
     }
 
-    public Object getRealClientValue()
-    {
+    public Object getRealClientValue() {
         return clientValue;
     }
 
-    public Object getServerValue()
-    {
+    public Object getServerValue() {
         return serverValue;
     }
 
-    public boolean hasServerValue()
-    {
+    public boolean hasServerValue() {
         return serverValue != null;
     }
 
-    private boolean setClient(Object value)
-    {
+    private boolean setClient(Object value) {
         if (!hasPermission()) return false;
 
-        try
-        {
-            switch(type)
-            {
+        try {
+            switch (type) {
                 case 1:
                     clientValue = (int) Maths.clamp(Integer.valueOf(String.valueOf(value)), min, max);
                     break;
@@ -209,33 +185,28 @@ public class FieldInstance
                     clientValue = (float) Maths.clamp(Float.valueOf(String.valueOf(value)), min, max);
                     break;
                 case 5:
-                    clientValue = (double) Maths.clamp(Double.valueOf(String.valueOf(value)), min, max);
+                    clientValue = Maths.clamp(Double.valueOf(String.valueOf(value)), min, max);
                     break;
                 case 7:
-                    clientValue = (boolean) Boolean.valueOf(String.valueOf(value));
+                    clientValue = Boolean.valueOf(String.valueOf(value));
                     break;
                 default:
                     clientValue = String.valueOf(value);
             }
             hasChanged = hasChanged || cachedValue != clientValue;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             return false;
         }
 
         return cachedValue != clientValue;
     }
 
-    private boolean setServer(Object value)
-    {
-        try
-        {
+    private boolean setServer(Object value) {
+        try {
             if (value == null)
                 serverValue = null;
             else
-                switch(type)
-                {
+                switch (type) {
                     case 1:
                         serverValue = (int) Maths.clamp(Integer.valueOf(String.valueOf(value)), min, max);
                         break;
@@ -249,7 +220,7 @@ public class FieldInstance
                         serverValue = (float) Maths.clamp(Float.valueOf(String.valueOf(value)), min, max);
                         break;
                     case 5:
-                        serverValue = (double) Maths.clamp(Double.valueOf(String.valueOf(value)), min, max);
+                        serverValue = Maths.clamp(Double.valueOf(String.valueOf(value)), min, max);
                         break;
                     case 7:
                         serverValue = Boolean.valueOf(String.valueOf(value));
@@ -259,37 +230,30 @@ public class FieldInstance
                 }
 
             hasChanged = hasChanged || (!ConfigManager.isRemote || enforce || !hasPermission()) && cachedValue != serverValue;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             return false;
         }
 
         return (!ConfigManager.isRemote || enforce || !hasPermission()) && cachedValue != serverValue;
     }
 
-    public boolean setClientValue(Object value)
-    {
-        if (ConfigManager.isRemote)
-        {
+    public boolean setClientValue(Object value) {
+        if (ConfigManager.isRemote) {
             if (value == null)
                 ConfigModEX.fatal(new NullPointerException("Client value cannot be null clientside"));
             return setClient(value);
-        }
-        else
+        } else
             ConfigModEX.fatal(new IllegalArgumentException("Client value cannot be set serverside"));
         return false;
     }
 
-    public boolean setServerValue(Object value)
-    {
+    public boolean setServerValue(Object value) {
         if (!ConfigManager.isRemote && value == null)
             ConfigModEX.fatal(new NullPointerException("Server value cannot be null serverside"));
         return setServer(value);
     }
 
-    public FieldInstance setToDefault()
-    {
+    public FieldInstance setToDefault() {
         if (ConfigManager.isRemote)
             clientValue = defaultValue;
         else
@@ -297,13 +261,11 @@ public class FieldInstance
         return this;
     }
 
-    public boolean hasConfigValue()
-    {
+    public boolean hasConfigValue() {
         return configPath != null;
     }
 
-    public FieldInstance setConfigValue(com.electronwill.nightconfig.core.file.CommentedFileConfig config, Object defaultValue, String comment)
-    {
+    public FieldInstance setConfigValue(com.electronwill.nightconfig.core.file.CommentedFileConfig config, Object defaultValue, String comment) {
         if (hasConfigValue())
             ConfigModEX.fatal(new IllegalArgumentException("Config value was already set"));
         this.configPath = StringUtils.parseID(this.config.getName()) + "." + displayName;
@@ -313,42 +275,35 @@ public class FieldInstance
         return this;
     }
 
-    public FieldInstance updateConfigValue()
-    {
-        if (configPath == null)
-        {
+    public FieldInstance updateConfigValue() {
+        if (configPath == null) {
             ConfigModEX.error("Config path was not set. Skipping...");
             return this;
         }
 
         ConfigInstance configInstance = ConfigManager.getInstance(this.config);
-        if (configInstance == null)
-        {
+        if (configInstance == null) {
             ConfigModEX.error("Config instance is null for " + this.config.getName() + ". Skipping...");
             return this;
         }
 
-        if (configInstance.configuration == null)
-        {
+        if (configInstance.configuration == null) {
             ConfigModEX.error("Configuration is null for " + this.config.getName() + ". Skipping...");
             return this;
         }
 
-        configInstance.configuration.set(configPath, String.valueOf(ConfigManager.isRemote ? clientValue : serverValue));
+        configInstance.configuration.set(configPath, ConfigManager.isRemote ? clientValue : serverValue);
         return this;
     }
 
-    public void reset()
-    {
-        if (ConfigManager.isRemote)
-        {
+    public void reset() {
+        if (ConfigManager.isRemote) {
             setServerValue(null);
             setRealValue();
         }
     }
 
-    public String toString()
-    {
+    public String toString() {
         return String.format("{instance=" + config.getName() + ", registryName=" + registryName + ", enforced=" + enforce + ", hide=" + hide + ", requiresRestart=" + requiresRestart + ", requiresWorldRestart=" + requiresWorldRestart + ", permission=" + permission + ", defaultValue=" + defaultValue + "}");
     }
 }

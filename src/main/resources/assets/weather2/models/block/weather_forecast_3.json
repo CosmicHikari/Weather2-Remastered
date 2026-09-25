@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "weather2:blocks/weather_forecast_3"
+    "all": "weather2:block/weather_forecast_3"
   }
 }

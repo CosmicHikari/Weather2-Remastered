@@ -11,20 +11,17 @@ import net.minecraft.util.math.vector.Vector3f;
 import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.block.tile.TileWindVane;
 
-public class RenderWindVane extends TileEntityRenderer<TileWindVane>
-{
+public class RenderWindVane extends TileEntityRenderer<TileWindVane> {
     public ModelWindVane model;
-    public ResourceLocation texture = new ResourceLocation(Weather2.OLD_MODID + ":textures/blocks/windvane_custom.png");
+    public ResourceLocation texture = new ResourceLocation(Weather2.OLD_MODID + ":textures/block/windvane_custom.png");
 
-    public RenderWindVane(TileEntityRendererDispatcher rendererDispatcherIn)
-    {
+    public RenderWindVane(TileEntityRendererDispatcher rendererDispatcherIn) {
         super(rendererDispatcherIn);
         model = new ModelWindVane();
     }
 
     @Override
-    public void render(TileWindVane tileEntity, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay)
-    {
+    public void render(TileWindVane tileEntity, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay) {
         float renderAngle = tileEntity.smoothAngle - 90;
 
         float scale = 1F;
@@ -39,25 +36,19 @@ public class RenderWindVane extends TileEntityRenderer<TileWindVane>
 
         boolean isInv = false;
 
-        if (isInv)
-        {
+        if (isInv) {
             matrixStack.translate(0, 1.0F * model.scaleY * model.scaleItem, 0);
             matrixStack.scale(model.scaleItem, model.scaleItem, model.scaleItem);
             matrixStack.mulPose(Vector3f.YP.rotationDegrees(180));
-        }
-        else
-        {
+        } else {
             matrixStack.translate(0, 1.5F * model.scaleY, 0);
         }
 
         matrixStack.mulPose(Vector3f.ZP.rotationDegrees(180));
 
-        if (!isInv)
-        {
+        if (!isInv) {
             matrixStack.translate(model.offsetX, model.offsetY, model.offsetZ);
-        }
-        else
-        {
+        } else {
             matrixStack.translate(model.offsetInvX, model.offsetInvY, 0);
         }
 

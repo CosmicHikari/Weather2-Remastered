@@ -1,28 +1,8 @@
 {
-  "forge_marker": 1,
-  "defaults": {
-    "textures": {
-      "all": "weather2:blocks/humidity_sensor"
-    },
-    "model": "weather2:humidity_sensor",
-    "uvlock": true
-  },
   "variants": {
-	"power=0": { "model": "weather2:humidity_sensor" },
-	"power=1": { "model": "weather2:humidity_sensor" },
-	"power=2": { "model": "weather2:humidity_sensor" },
-	"power=3": { "model": "weather2:humidity_sensor" },
-	"power=4": { "model": "weather2:humidity_sensor" },
-	"power=5": { "model": "weather2:humidity_sensor" },
-	"power=6": { "model": "weather2:humidity_sensor" },
-	"power=7": { "model": "weather2:humidity_sensor" },
-	"power=8": { "model": "weather2:humidity_sensor" },
-	"power=9": { "model": "weather2:humidity_sensor" },
-	"power=10": { "model": "weather2:humidity_sensor" },
-	"power=11": { "model": "weather2:humidity_sensor" },
-	"power=12": { "model": "weather2:humidity_sensor" },
-	"power=13": { "model": "weather2:humidity_sensor" },
-	"power=14": { "model": "weather2:humidity_sensor" },
-	"power=15": { "model": "weather2:humidity_sensor" }
+    "": {
+      "model": "weather2:block/humidity_sensor",
+      "uvlock": true
+    }
   }
 }

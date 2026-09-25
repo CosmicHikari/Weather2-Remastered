@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "weather2:cpu_1"
+    ]
+  },
+  "criteria": {
+    "has_cpu_0": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "weather2:cpu_0"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "weather2:cpu_1"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_cpu_0",
+      "has_the_recipe"
+    ]
+  ]
+}

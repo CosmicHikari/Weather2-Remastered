@@ -1,0 +1,44 @@
+{
+  "advancements": [
+    {
+      "conditions": [
+        {
+          "key": "disable_sand",
+          "type": "weather2:config_enabled"
+        }
+      ],
+      "advancement": {
+        "parent": "minecraft:recipes/root",
+        "rewards": {
+          "recipes": [
+            "minecraft:sand"
+          ]
+        },
+        "criteria": {
+          "has_sand_layer": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+              "items": [
+                {
+                  "item": "weather2:sand_layer_placeable"
+                }
+              ]
+            }
+          },
+          "has_the_recipe": {
+            "trigger": "minecraft:recipe_unlocked",
+            "conditions": {
+              "recipe": "minecraft:sand"
+            }
+          }
+        },
+        "requirements": [
+          [
+            "has_sand_layer",
+            "has_the_recipe"
+          ]
+        ]
+      }
+    }
+  ]
+}

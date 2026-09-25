@@ -1,27 +1,15 @@
 package net.mrbt0907.weather2.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import net.CoroUtil.block.BlockRepairingBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.SlabBlock;
-import net.minecraft.block.SnowBlock;
+import net.corosus.coroutillegacy.block.BlockRepairingBlock;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerChunkProvider;
 import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.api.WeatherAPI;
 import net.mrbt0907.weather2.block.BlockSandLayer;
@@ -30,30 +18,30 @@ import net.mrbt0907.weather2.registry.BlockRegistry;
 import net.mrbt0907.weather2.util.Maths.Vec3;
 import net.mrbt0907.weather2.weather.storm.StormObject;
 
+import java.util.ArrayList;
+import java.util.List;
 
-public class WeatherUtilBlock
-{
+
+public class WeatherUtilBlock {
     public static int layerableHeightPropMax = 8;
 
-    public static boolean safeReplaceCheck(BlockState state, World world, BlockPos pos)
-    {
-        try
-        {
+    public static boolean safeReplaceCheck(BlockState state, World world, BlockPos pos) {
+        try {
             return state.getMaterial().isReplaceable();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return false;
         }
     }
 
-    public static boolean isReplacable(BlockState state, boolean includeReplaceableBlocks)
-    {
+    public static boolean isReplacable(BlockState state, boolean includeReplaceableBlocks) {
         Material material = state.getMaterial();
         if (includeReplaceableBlocks)
             return material.isReplaceable();
         return material.isLiquid()
                 || material == Material.AIR
+                || material == Material.PORTAL
+                || material == Material.BARRIER
+                || material == Material.STRUCTURAL_AIR
                 || material == Material.PLANT
                 || material == Material.REPLACEABLE_PLANT
                 || material == Material.WATER_PLANT
@@ -64,13 +52,12 @@ public class WeatherUtilBlock
         WeatherUtilBlock.fillAgainstWallSmoothly(world, posSource, directionYaw, scanDistance, fillRadius, blockLayerable, 4);
     }
 
-    public static void fillAgainstWallSmoothly(World world, Vec3 posSource, float directionYaw, float scanDistance, float fillRadius, Block blockLayerable, int heightDiff)
-    {
+    public static void fillAgainstWallSmoothly(World world, Vec3 posSource, float directionYaw, float scanDistance, float fillRadius, Block blockLayerable, int heightDiff) {
         BlockState stateTest = ChunkUtils.getBlockState(world, posSource.toBlockPos());
-        if (stateTest.getBlock() == blockLayerable)
-        {
+        if (stateTest.getBlock() == blockLayerable) {
             int heightTest = WeatherUtilBlock.getHeightForAnyBlock(stateTest);
-            if (heightTest < 8) {}
+            if (heightTest < 8) {
+            }
         }
 
         BlockPos posSourcei = posSource.toBlockPos();
@@ -91,7 +78,7 @@ public class WeatherUtilBlock
             BlockPos posXZ = new BlockPos(x, 0, z);
             BlockState state = ChunkUtils.getBlockState(world, pos);
 
-            if (lastScannedPosXZ == null || !posXZ.equals(lastScannedPosXZ)) {
+            if (!posXZ.equals(lastScannedPosXZ)) {
                 lastScannedPosXZ = new BlockPos(posXZ);
                 VoxelShape shape = state.getShape(world, pos);
                 List<AxisAlignedBB> listAABBCollision = new ArrayList<>();
@@ -103,8 +90,12 @@ public class WeatherUtilBlock
                     if (stateUp.getMaterial() == Material.AIR) {
                         int height = WeatherUtilBlock.getHeightForAnyBlock(state);
                         if (height - previousBlockHeight <= heightDiff) {
-                            if (height == 8) { previousBlockHeight = 0; y++; }
-                            else { previousBlockHeight = height; }
+                            if (height == 8) {
+                                previousBlockHeight = 0;
+                                y++;
+                            } else {
+                                previousBlockHeight = height;
+                            }
                             posLastNonWall = new Vec3(posSource.posX + vecX, y, posSource.posZ + vecZ);
                             continue;
                         } else {
@@ -130,7 +121,8 @@ public class WeatherUtilBlock
             BlockState state3 = ChunkUtils.getBlockState(world, posLastNonWall.toBlockPos().offset(0, 0, 1));
             BlockState state4 = ChunkUtils.getBlockState(world, posLastNonWall.toBlockPos().offset(0, 0, -1));
             if (state.getBlock() == Blocks.CACTUS || state1.getBlock() == Blocks.CACTUS ||
-                    state22.getBlock() == Blocks.CACTUS || state3.getBlock() == Blocks.CACTUS || state4.getBlock() == Blocks.CACTUS) return;
+                    state22.getBlock() == Blocks.CACTUS || state3.getBlock() == Blocks.CACTUS || state4.getBlock() == Blocks.CACTUS)
+                return;
             BlockPos pos2 = new BlockPos(posLastNonWall.posX, posLastNonWall.posY, posLastNonWall.posZ);
             BlockState state2 = ChunkUtils.getBlockState(world, pos2);
             if (state2.getMaterial() == Material.WATER || state2.getMaterial() == Material.LAVA) return;
@@ -225,7 +217,7 @@ public class WeatherUtilBlock
                         float om = mode == 1 ? -1F : 1F;
                         double vecX = (-Maths.fastSin(Math.toRadians(directionYaw - (angle * om))) * (i));
                         double vecZ = (Maths.fastCos(Math.toRadians(directionYaw - (angle * om))) * (i));
-                        BlockPos pos = new BlockPos(MathHelper.floor(posSource.posX + vecX), (int)posSource.posY, MathHelper.floor(posSource.posZ + vecZ));
+                        BlockPos pos = new BlockPos(MathHelper.floor(posSource.posX + vecX), (int) posSource.posY, MathHelper.floor(posSource.posZ + vecZ));
                         if (!listProcessedFilter.contains(pos)) {
                             listProcessedFilter.add(pos);
                             amountWeHave = WeatherUtilBlock.tryTakeFromPos(world, pos, amountWeHave, amountToTakePerXZ, maxFallDist, blockLayerable);
@@ -240,7 +232,7 @@ public class WeatherUtilBlock
 
         if (doRadius) {
             for (float i = 1; i < spreadDist && amountWeHave > 0; i += 0.75F) {
-                int amountToAddBasedOnDist = Math.max((int)(((float)WeatherUtilBlock.layerableHeightPropMax + 1F) - (i * 1.5F)), 1);
+                int amountToAddBasedOnDist = Math.max((int) (((float) WeatherUtilBlock.layerableHeightPropMax + 1F) - (i * 1.5F)), 1);
                 amountToAddBasedOnDist = 2;
                 for (float angle = 0; angle <= 180 && amountWeHave > 0; angle += angleScanResolution) {
                     for (int mode = 0; mode <= 1 && amountWeHave > 0; mode++) {
@@ -249,9 +241,9 @@ public class WeatherUtilBlock
                         double vecZ = (Maths.fastCos(Math.toRadians(directionYaw - (angle * om))) * (i));
                         int x = MathHelper.floor(posLastNonWall.posX + vecX);
                         int z = MathHelper.floor(posLastNonWall.posZ + vecZ);
-                        BlockPos pos = new BlockPos(x, (int)posLastNonWall.posY, z);
+                        BlockPos pos = new BlockPos(x, (int) posLastNonWall.posY, z);
                         Vector3d sourceTest = posSource.addVector(0, 1D, 0).toVec3MC();
-                        Vector3d destTest = new Vector3d(x + 0.5F, (int)posLastNonWall.posY + 1.5F, z + 0.5F);
+                        Vector3d destTest = new Vector3d(x + 0.5F, (int) posLastNonWall.posY + 1.5F, z + 0.5F);
                         BlockRayTraceResult destFound = world.clip(new RayTraceContext(sourceTest, destTest, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, null));
                         if (destFound.getType() == BlockRayTraceResult.Type.MISS && !listProcessedFilter.contains(pos)) {
                             listProcessedFilter.add(pos);
@@ -268,14 +260,16 @@ public class WeatherUtilBlock
     public static int tryTakeFromPos(World world, BlockPos posTakeFrom, int amount, int amountAllowedToTakeForXZ, int maxDropAllowed, Block blockLayerable) {
         int amountTaken = 0;
         BlockState statePos = ChunkUtils.getBlockState(world, posTakeFrom);
-        if (!WeatherUtilBlock.isLayeredOrVanillaVersionOfBlock(statePos, blockLayerable) && !statePos.isAir(world, posTakeFrom)) return amount;
+        if (!WeatherUtilBlock.isLayeredOrVanillaVersionOfBlock(statePos, blockLayerable) && !statePos.isAir(world, posTakeFrom))
+            return amount;
 
         int dropDist = 0;
         BlockPos posScan = new BlockPos(posTakeFrom);
         while (statePos.isAir(world, posScan) && dropDist++ < maxDropAllowed) {
             posScan = posScan.offset(0, -1, 0);
             statePos = ChunkUtils.getBlockState(world, posScan);
-            if (!WeatherUtilBlock.isLayeredOrVanillaVersionOfBlock(statePos, blockLayerable) && !statePos.isAir(world, posScan)) return amount;
+            if (!WeatherUtilBlock.isLayeredOrVanillaVersionOfBlock(statePos, blockLayerable) && !statePos.isAir(world, posScan))
+                return amount;
         }
 
         while (amountTaken < amountAllowedToTakeForXZ) {
@@ -338,19 +332,41 @@ public class WeatherUtilBlock
         while (amountAllowedToAdd > 0 && ChunkUtils.getBlockState(world, posPlaceLayerable.offset(0, 1, 0)).getMaterial() == Material.AIR) {
             if (statePlaceLayerable.getBlock() == blockLayerable && WeatherUtilBlock.getHeightForLayeredBlock(statePlaceLayerable) < WeatherUtilBlock.layerableHeightPropMax) {
                 int height = WeatherUtilBlock.getHeightForLayeredBlock(statePlaceLayerable) + amountAllowedToAdd;
-                if (height > WeatherUtilBlock.layerableHeightPropMax) { amountAllowedToAdd = height - WeatherUtilBlock.layerableHeightPropMax; height = WeatherUtilBlock.layerableHeightPropMax; }
-                else { amountAllowedToAdd = 0; }
-                try { ChunkUtils.setBlockState(world, posPlaceLayerable, WeatherUtilBlock.setBlockWithLayerState(blockLayerable, height)); } catch (Exception e) { e.printStackTrace(); }
-                if (height == WeatherUtilBlock.layerableHeightPropMax) { posPlaceLayerable = posPlaceLayerable.offset(0, 1, 0); statePlaceLayerable = ChunkUtils.getBlockState(world, posPlaceLayerable); }
+                if (height > WeatherUtilBlock.layerableHeightPropMax) {
+                    amountAllowedToAdd = height - WeatherUtilBlock.layerableHeightPropMax;
+                    height = WeatherUtilBlock.layerableHeightPropMax;
+                } else {
+                    amountAllowedToAdd = 0;
+                }
+                try {
+                    ChunkUtils.setBlockState(world, posPlaceLayerable, WeatherUtilBlock.setBlockWithLayerState(blockLayerable, height));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (height == WeatherUtilBlock.layerableHeightPropMax) {
+                    posPlaceLayerable = posPlaceLayerable.offset(0, 1, 0);
+                    statePlaceLayerable = ChunkUtils.getBlockState(world, posPlaceLayerable);
+                }
             } else if (statePlaceLayerable.isFaceSturdy(world, posPlaceLayerable, Direction.UP)) {
                 posPlaceLayerable = posPlaceLayerable.offset(0, 1, 0);
                 statePlaceLayerable = ChunkUtils.getBlockState(world, posPlaceLayerable);
             } else if (statePlaceLayerable.getMaterial() == Material.AIR) {
                 int height = amountAllowedToAdd;
-                if (height > WeatherUtilBlock.layerableHeightPropMax) { amountAllowedToAdd = height - WeatherUtilBlock.layerableHeightPropMax; height = WeatherUtilBlock.layerableHeightPropMax; }
-                else { amountAllowedToAdd = 0; }
-                try { ChunkUtils.setBlockState(world, posPlaceLayerable, WeatherUtilBlock.setBlockWithLayerState(blockLayerable, height)); } catch (Exception e) { e.printStackTrace(); }
-                if (height == WeatherUtilBlock.layerableHeightPropMax) { posPlaceLayerable = posPlaceLayerable.offset(0, 1, 0); statePlaceLayerable = ChunkUtils.getBlockState(world, posPlaceLayerable); }
+                if (height > WeatherUtilBlock.layerableHeightPropMax) {
+                    amountAllowedToAdd = height - WeatherUtilBlock.layerableHeightPropMax;
+                    height = WeatherUtilBlock.layerableHeightPropMax;
+                } else {
+                    amountAllowedToAdd = 0;
+                }
+                try {
+                    ChunkUtils.setBlockState(world, posPlaceLayerable, WeatherUtilBlock.setBlockWithLayerState(blockLayerable, height));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (height == WeatherUtilBlock.layerableHeightPropMax) {
+                    posPlaceLayerable = posPlaceLayerable.offset(0, 1, 0);
+                    statePlaceLayerable = ChunkUtils.getBlockState(world, posPlaceLayerable);
+                }
             } else {
                 Weather2.debug("wat! - " + statePlaceLayerable);
                 break;
@@ -366,8 +382,7 @@ public class WeatherUtilBlock
         Block block = state.getBlock();
         if (block == blockLayerable) return true;
         if (blockLayerable == BlockRegistry.sand_layer.get() && block == Blocks.SAND) return true;
-        if (blockLayerable == Blocks.SNOW && block == Blocks.SNOW_BLOCK) return true;
-        return false;
+        return blockLayerable == Blocks.SNOW && block == Blocks.SNOW_BLOCK;
     }
 
     public static int getHeightForAnyBlock(BlockState state) {
@@ -382,7 +397,8 @@ public class WeatherUtilBlock
 
     public static int getHeightForLayeredBlock(BlockState state) {
         if (state.getBlock() == Blocks.SNOW) return state.getValue(SnowBlock.LAYERS).intValue();
-        else if (state.getBlock() == BlockRegistry.sand_layer.get()) return state.getValue(BlockSandLayer.LAYERS).intValue();
+        else if (state.getBlock() == BlockRegistry.sand_layer.get())
+            return state.getValue(BlockSandLayer.LAYERS).intValue();
         else if (state.getBlock() == Blocks.SAND || state.getBlock() == Blocks.SNOW_BLOCK) return 8;
         else return 0;
     }
@@ -424,8 +440,15 @@ public class WeatherUtilBlock
     public static int addHeightToLayerableBLock(World world, BlockPos pos, Block block, int sourceAmount, int amount) {
         int curAmount = sourceAmount + amount;
         int leftOver = 0;
-        if (curAmount > WeatherUtilBlock.layerableHeightPropMax) { leftOver = curAmount - WeatherUtilBlock.layerableHeightPropMax; curAmount = WeatherUtilBlock.layerableHeightPropMax; }
-        try { ChunkUtils.setBlockState(world, pos, WeatherUtilBlock.setBlockWithLayerState(block, curAmount)); } catch (Exception e) { e.printStackTrace(); }
+        if (curAmount > WeatherUtilBlock.layerableHeightPropMax) {
+            leftOver = curAmount - WeatherUtilBlock.layerableHeightPropMax;
+            curAmount = WeatherUtilBlock.layerableHeightPropMax;
+        }
+        try {
+            ChunkUtils.setBlockState(world, pos, WeatherUtilBlock.setBlockWithLayerState(block, curAmount));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return leftOver;
     }
 
@@ -433,10 +456,19 @@ public class WeatherUtilBlock
         BlockState state = ChunkUtils.getBlockState(world, pos);
         int height = WeatherUtilBlock.getHeightForLayeredBlock(state);
         int newHeight, amountReceived;
-        if (height <= amount) { newHeight = 0; amountReceived = height; }
-        else { newHeight = height - amount; amountReceived = amount; }
+        if (height <= amount) {
+            newHeight = 0;
+            amountReceived = height;
+        } else {
+            newHeight = height - amount;
+            amountReceived = amount;
+        }
         if (newHeight > 0) {
-            try { ChunkUtils.setBlockState(world, pos, WeatherUtilBlock.setBlockWithLayerState(block, newHeight)); } catch (Exception e) { e.printStackTrace(); }
+            try {
+                ChunkUtils.setBlockState(world, pos, WeatherUtilBlock.setBlockWithLayerState(block, newHeight));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
             world.removeBlock(pos, false);
         }
@@ -448,50 +480,44 @@ public class WeatherUtilBlock
         return world.isLoaded(pos) ? pos : null;
     }
 
-    public static boolean canReachBlock(World world, BlockPos pos)
-    {
+    public static boolean canReachBlock(World world, BlockPos pos) {
         return WeatherUtilBlock.canReachBlock(world, pos, 1);
     }
 
-    public static boolean canReachBlock(World world, BlockPos pos, int range)
-    {
+    public static boolean canReachBlock(World world, BlockPos pos, int range) {
         if (!world.isLoaded(pos)) return false;
         if (WeatherUtilBlock.getHeightSafe(world, pos).getY() - 1 == pos.getY()) return true;
 
         for (int i = 1; i <= range; i++)
             if (WeatherUtilBlock.getHeightSafe(world, pos.north(i)).getY() <= pos.getY()
-                    || WeatherUtilBlock.getHeightSafe(world, pos.east(i)).getY()  <= pos.getY()
+                    || WeatherUtilBlock.getHeightSafe(world, pos.east(i)).getY() <= pos.getY()
                     || WeatherUtilBlock.getHeightSafe(world, pos.south(i)).getY() <= pos.getY()
-                    || WeatherUtilBlock.getHeightSafe(world, pos.west(i)).getY()  <= pos.getY())
+                    || WeatherUtilBlock.getHeightSafe(world, pos.west(i)).getY() <= pos.getY())
                 return true;
 
         return false;
     }
 
-    public static boolean canGrabBlock(StormObject storm, BlockPos pos, BlockState state)
-    {
+    public static boolean canGrabBlock(StormObject storm, BlockPos pos, BlockState state) {
         if (!ConfigGrab.grab_blocks || pos == null) return false;
         World world = storm.manager.getWorld();
         if (world == null || !WeatherUtilBlock.canReachBlock(world, pos)) return false;
         return WeatherUtilBlock.checkIllegalList(state);
     }
 
-    public static boolean checkIllegalList(BlockState state)
-    {
+    public static boolean checkIllegalList(BlockState state) {
         Block block = state.getBlock();
         Material material = state.getMaterial();
         return !(state.isAir() || material.isLiquid() || block instanceof BlockRepairingBlock);
     }
 
-    public static boolean checkResistance(StormObject storm, String blockID)
-    {
+    public static boolean checkResistance(StormObject storm, String blockID) {
         ConfigList list = WeatherAPI.getWRList();
         float resistance = list.exists(blockID) ? (float) list.get(blockID) / 9.657718F : -1.0F;
         return resistance > -1.0F && storm.windSpeed >= resistance;
     }
 
-    public static BlockPos getHeightSafe(World world, BlockPos pos)
-    {
+    public static BlockPos getHeightSafe(World world, BlockPos pos) {
         Chunk chunk = WeatherUtilBlock.getChunk(world, pos.getX(), pos.getZ());
         if (chunk == null)
             return pos.below(pos.getY());
@@ -499,8 +525,7 @@ public class WeatherUtilBlock
         int surfaceY = chunk.getHeight(Heightmap.Type.WORLD_SURFACE, pos.getX() & 15, pos.getZ() & 15);
         BlockPos new_pos = new BlockPos(pos.getX(), Math.min(pos.getY(), surfaceY), pos.getZ());
 
-        while (new_pos.getY() < 255)
-        {
+        while (new_pos.getY() < 255) {
             BlockState state = chunk.getBlockState(new_pos);
             if (WeatherUtilBlock.isReplacable(state, false))
                 break;
@@ -509,19 +534,17 @@ public class WeatherUtilBlock
         return new_pos;
     }
 
-    public static BlockPos getPrecipitationHeightSafe(World world, BlockPos pos)
-    {
+    public static BlockPos getPrecipitationHeightSafe(World world, BlockPos pos) {
         if (world.isLoaded(pos))
             return world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, pos);
         else
             return new BlockPos(pos.getX(), 0, pos.getZ());
     }
 
-    public static Chunk getChunk(World world, int x, int z)
-    {
+    public static Chunk getChunk(World world, int x, int z) {
         if (world.isClientSide)
             return world.getChunk(x >> 4, z >> 4);
         else
-            return ((ServerChunkProvider) world.getChunkSource()).getChunk(x >> 4, z >> 4, false);
+            return world.getChunkSource().getChunk(x >> 4, z >> 4, false);
     }
 }

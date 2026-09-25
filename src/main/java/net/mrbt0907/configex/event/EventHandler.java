@@ -9,18 +9,15 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.mrbt0907.configex.ConfigManager;
 import net.mrbt0907.configex.network.NetworkHandler;
 
-public class EventHandler
-{
+public class EventHandler {
     @SubscribeEvent
-    public static void onClientTick(ClientTickEvent event)
-    {
+    public static void onClientTick(ClientTickEvent event) {
         if (event.phase.equals(Phase.START))
             ClientHandler.onTick();
     }
 
     @SubscribeEvent
-    public static void playerLoggedIn(PlayerLoggedInEvent event)
-    {
+    public static void playerLoggedIn(PlayerLoggedInEvent event) {
         if (!ConfigManager.isRemote && event.getPlayer() instanceof ServerPlayerEntity)
             NetworkHandler.sendClientPacket(0, ConfigManager.writeNBT(new CompoundNBT()), event.getPlayer());
     }

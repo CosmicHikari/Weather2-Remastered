@@ -1,119 +1,87 @@
 package net.mrbt0907.weather2.weather;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-
-import org.apache.commons.io.FileUtils;
-
+import net.corosus.coroutillegacy.util.CoroUtilFile;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.RegistryKey;
+import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.IServerWorldInfo;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.api.weather.IWeatherRain;
 import net.mrbt0907.weather2.api.weather.IWeatherStaged;
-import net.mrbt0907.weather2.config.ConfigFront;
-import net.mrbt0907.weather2.config.ConfigMisc;
-import net.mrbt0907.weather2.config.ConfigClient;
-import net.mrbt0907.weather2.config.ConfigSand;
-import net.mrbt0907.weather2.config.ConfigSimulation;
-import net.mrbt0907.weather2.config.ConfigStorm;
-import net.mrbt0907.weather2.config.EZConfigParser;
-import net.mrbt0907.weather2.network.packets.PacketFrontObject;
-import net.mrbt0907.weather2.network.packets.PacketVanillaWeather;
-import net.mrbt0907.weather2.network.packets.PacketVolcanoObject;
-import net.mrbt0907.weather2.network.packets.PacketWeatherObject;
-import net.mrbt0907.weather2.network.packets.PacketWind;
+import net.mrbt0907.weather2.config.*;
+import net.mrbt0907.weather2.network.packets.*;
 import net.mrbt0907.weather2.util.Maths;
 import net.mrbt0907.weather2.util.Maths.Vec3;
 import net.mrbt0907.weather2.util.WeatherUtilBlock;
 import net.mrbt0907.weather2.util.WeatherUtilEntity;
-import net.mrbt0907.weather2.weather.storm.StormObject;
-import net.mrbt0907.weather2.weather.storm.WeatherObject;
 import net.mrbt0907.weather2.weather.storm.FrontObject;
 import net.mrbt0907.weather2.weather.storm.SandstormObject;
+import net.mrbt0907.weather2.weather.storm.StormObject;
+import net.mrbt0907.weather2.weather.storm.WeatherObject;
 import net.mrbt0907.weather2.weather.volcano.VolcanoObject;
-import net.CoroUtil.util.CoroUtilFile;
+import org.apache.commons.io.FileUtils;
 
-public class WeatherManagerServer extends WeatherManager
-{
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class WeatherManagerServer extends WeatherManager {
+    public static int stormChanceToday = 10;
     private long ticksFrontFormed = 0L;
     private long ticksSandstormFormed = 0L;
     private long ticksStormFormed = 0L;
-    public static int stormChanceToday = 10;
 
-    public WeatherManagerServer(World world)
-    {
+    public WeatherManagerServer(World world) {
         super(world);
     }
 
     @Override
-    public World getWorld()
-    {
+    public World getWorld() {
         return ServerLifecycleHooks.getCurrentServer().getLevel(dim);
     }
 
     @Override
-    public void tick()
-    {
+    public void tick() {
         super.tick();
-
-        if (world != null)
-        {
+        if (world != null) {
             tickWeatherCoverage(ticks);
-
 
             FrontObject front;
             WeatherObject system;
 
-
-            if(world.getDayTime() % 24000 == 1)
+            if (world.getDayTime() % 24000 == 1)
                 stormChanceToday = Maths.random(ConfigStorm.storm_spawn_chance_min, ConfigStorm.storm_spawn_chance_max);
-
             List<FrontObject> fronts = new ArrayList<FrontObject>(this.fronts.values());
             List<WeatherObject> systems = getWeatherObjects();
             WeatherObject spawn = null;
             boolean spawned = false, spawnInFront = Maths.chance(ConfigFront.chance_to_spawn_storm_in_front * 0.01D);
 
-            for (int i = 0; i < fronts.size(); i++)
-            {
+            for (int i = 0; i < fronts.size(); i++) {
                 front = fronts.get(i);
-                if (front.isDead)
-                {
-                    if (front.isGlobal())
-                    {
+                if (front.isDead) {
+                    if (front.isGlobal()) {
                         front.reset();
                         systems.forEach(weather -> PacketWeatherObject.remove(dim, weather));
                         systems.clear();
                         front.isDead = false;
-                    }
-                    else
-                    {
+                    } else {
                         PacketFrontObject.remove(dim, front);
                         removeFront(front.getUUID());
                     }
-                }
-                else
-                {
-                    if(!front.equals(globalFront) && spawnInFront && canSpawnWeather(1))
-                    {
+                } else {
+                    if (!front.equals(globalFront) && spawnInFront && canSpawnWeather(1)) {
                         spawn = front.createNaturalStorm();
-                        if (spawn != null)
-                        {
+                        if (spawn != null) {
                             spawned = true;
                             PacketWeatherObject.create(dim, spawn);
                         }
@@ -126,51 +94,39 @@ public class WeatherManagerServer extends WeatherManager
             if (spawned)
                 ticksStormFormed = world.getGameTime() + ConfigStorm.storm_spawn_delay;
 
-            for (int i = 0; i < systems.size(); i++)
-            {
+            for (int i = 0; i < systems.size(); i++) {
                 system = systems.get(i);
 
-                if (ticks % 20 == 0)
-                {
+                if (ticks % 20 == 0) {
                     if (ConfigMisc.remove_storms_if_no_players && world.players().size() == 0 || WeatherUtilEntity.getClosestPlayer(world, system.posGround.posX, system.posGround.posY, system.posGround.posZ, ConfigSimulation.max_storm_distance) == null)
                         system.ticksSinceNoNearPlayer += 20;
                     else
                         system.ticksSinceNoNearPlayer = 0;
                 }
 
-                if (system.isDead || system.ticksSinceNoNearPlayer > 600 || ConfigMisc.aesthetic_mode)
-                {
+                if (system.isDead || system.ticksSinceNoNearPlayer > 600 || ConfigMisc.aesthetic_mode) {
                     PacketWeatherObject.remove(dim, system);
                     system.front.removeWeatherObject(system.getUUID());
-                }
-                else if (ticks % system.getNetRate() == 0)
+                } else if (ticks % system.getNetRate() == 0)
                     PacketWeatherObject.update(dim, system);
             }
-
 
             if (ticks % 40 == 0)
                 volcanoObjects.forEach(vo -> PacketVolcanoObject.update(dim, vo));
 
-
-            if (ticks % 60 == 0)
-            {
+            if (ticks % 60 == 0) {
                 PacketWind.update(dim, windManager);
                 nbtStormsForIMC();
             }
 
-
-            if (!ConfigMisc.aesthetic_mode)
-            {
-                if (EZConfigParser.isWeatherEnabled(world.dimension().location().toString()) && world.getGameTime() % ConfigStorm.spawningTickRate == 0)
-                {
+            if (!ConfigMisc.aesthetic_mode) {
+                if (EZConfigParser.isWeatherEnabled(world.dimension().location().toString()) && world.getGameTime() % ConfigStorm.spawningTickRate == 0) {
                     List<PlayerEntity> players = new ArrayList<>(world.players());
                     int layer, frontCount = fronts.size() + 1;
 
-                    for (PlayerEntity player : players)
-                    {
+                    for (PlayerEntity player : players) {
                         layer = Maths.random(2);
-                        if (canSpawnWeather(0) && ConfigStorm.isLayerValid(layer))
-                        {
+                        if (canSpawnWeather(0) && ConfigStorm.isLayerValid(layer)) {
                             ticksFrontFormed = world.getGameTime() + ConfigStorm.storm_spawn_delay;
                             PacketFrontObject.create(dim, createNaturalFront(layer, player));
 
@@ -178,11 +134,9 @@ public class WeatherManagerServer extends WeatherManager
                                 break;
                         }
                         for (int i = 0; i < frontCount; i++)
-                            if(!spawnInFront && canSpawnWeather(1))
-                            {
+                            if (!spawnInFront && canSpawnWeather(1)) {
                                 spawn = globalFront.createNaturalStorm(player);
-                                if (spawn != null)
-                                {
+                                if (spawn != null) {
                                     spawned = true;
                                     PacketWeatherObject.create(dim, spawn);
                                 }
@@ -192,10 +146,8 @@ public class WeatherManagerServer extends WeatherManager
                     if (!spawnInFront && spawned)
                         ticksStormFormed = world.getGameTime() + ConfigStorm.storm_spawn_delay;
 
-                    if (canSpawnWeather(2))
-                    {
-                        if (world.players().size() > 0)
-                        {
+                    if (canSpawnWeather(2)) {
+                        if (world.players().size() > 0) {
                             PlayerEntity player = world.players().get(Maths.random(world.players().size() - 1));
                             ticksSandstormFormed = world.getGameTime() + ConfigSand.sandstorm_spawn_delay;
                             spawnSandstorm(new Vec3(player.getX(), player.getY(), player.getZ()));
@@ -206,16 +158,12 @@ public class WeatherManagerServer extends WeatherManager
         }
     }
 
-    public void tickWeatherCoverage(long ticks)
-    {
+    public void tickWeatherCoverage(long ticks) {
         IServerWorldInfo worldInfo = (IServerWorldInfo) world.getLevelData();
         boolean isRaining = worldInfo.isRaining();
         boolean isThundering = worldInfo.isThundering();
-
-        if (EZConfigParser.isWeatherEnabled(world.dimension().location().toString()))
-        {
-            if (!ConfigMisc.overcast_mode && ConfigMisc.server_weather_mode != -1)
-            {
+        if (EZConfigParser.isWeatherEnabled(world.dimension().location().toString())) {
+            if (!ConfigMisc.overcast_mode && ConfigMisc.server_weather_mode != -1) {
                 worldInfo.setRaining(ConfigMisc.server_weather_mode == 1);
                 worldInfo.setThundering(ConfigMisc.server_weather_mode == 1);
             }
@@ -227,15 +175,11 @@ public class WeatherManagerServer extends WeatherManager
         if (ticks % 40 == 0)
             PacketVanillaWeather.send(dim, isRaining ? isThundering ? 2 : 1 : 0, worldInfo.getRainTime());
 
-
         if (ticks % 200 == 0)
             cloudIntensity = ConfigMisc.overcast_mode && isRaining ? 1.0F : cloudIntensity + (float) Maths.clamp(Maths.random(ConfigClient.cloud_coverage_change_amount) - Maths.random(ConfigClient.cloud_coverage_change_amount), ConfigClient.min_cloud_coverage_perc * 0.01D, ConfigClient.max_cloud_coverage_perc * 0.01D);
-
-
     }
 
-    public void writeToFile()
-    {
+    public void writeToFile() {
         Weather2.debug("Saving weather2 data...");
         CompoundNBT mainNBT = new CompoundNBT();
         CompoundNBT volcanoesNBT = new CompoundNBT();
@@ -262,8 +206,7 @@ public class WeatherManagerServer extends WeatherManager
 
         fronts.forEach((uuid, front) ->
                 {
-                    if (!front.equals(globalFront))
-                    {
+                    if (!front.equals(globalFront)) {
                         frontNBT.put("front_" + uuid.toString(), front.writeNBT());
                         front.getWeatherObjects().forEach(weatherObject ->
                                 {
@@ -274,7 +217,7 @@ public class WeatherManagerServer extends WeatherManager
                                     Weather2.debug("Saved storm_" + weatherObject.getUUID().toString());
                                 }
                         );
-                        Weather2.debug("Saved front_" + uuid.toString());
+                        Weather2.debug("Saved front_" + uuid);
                     }
                 }
         );
@@ -282,40 +225,33 @@ public class WeatherManagerServer extends WeatherManager
         mainNBT.put("frontData", frontNBT);
         mainNBT.put("stormData", weatherNBT);
         mainNBT.putFloat("cloudIntensity", cloudIntensity);
-        mainNBT.putLong("ticksFrontFormed", ticksFrontFormed);
-        mainNBT.putLong("ticksSandstormFormed", ticksSandstormFormed);
-        mainNBT.putLong("ticksStormFormed", ticksStormFormed);
+        mainNBT.putFloat("ticksFrontFormed", ticksFrontFormed);
+        mainNBT.putFloat("ticksSandstormFormed", ticksSandstormFormed);
+        mainNBT.putFloat("ticksStormFormed", ticksStormFormed);
         mainNBT.put("windMan", windManager.writeToNBT(new CompoundNBT()));
         mainNBT.putInt("stormChanceToday", stormChanceToday);
 
-        String saveFolder = CoroUtilFile.getWorldSaveFolderPath() + CoroUtilFile.getWorldFolderName() + File.separator + "weather2" + File.separator;
+        String saveFolder = CoroUtilFile.getWorldSaveFolderPath() + CoroUtilFile.getWorldFolderName() + "weather2" + File.separator;
 
-        try
-        {
-
+        try {
             if (!(new File(saveFolder).exists())) new File(saveFolder).mkdirs();
             FileOutputStream fos = new FileOutputStream(saveFolder + "WeatherData_" + dim.location().toString().replace(":", "_") + ".dat");
             CompressedStreamTools.writeCompressed(mainNBT, fos);
             fos.close();
             Weather2.debug("Save successful!");
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             Weather2.debug("Save failed.");
             ex.printStackTrace();
         }
     }
 
-    public void readFromFile()
-    {
+    public void readFromFile() {
         Weather2.debug("Loading weather2 data...");
         CompoundNBT mainNBT = new CompoundNBT();
-        String saveFolder = CoroUtilFile.getWorldSaveFolderPath() + CoroUtilFile.getWorldFolderName() + File.separator + "weather2" + File.separator;
+        String saveFolder = CoroUtilFile.getWorldSaveFolderPath() + CoroUtilFile.getWorldFolderName() + "weather2" + File.separator;
 
-        try
-        {
-            if (new File(saveFolder + "WeatherData_" + dim.location().toString().replace(":", "_") + ".dat").exists())
-            {
+        try {
+            if (new File(saveFolder + "WeatherData_" + dim.location().toString().replace(":", "_") + ".dat").exists()) {
                 mainNBT = CompressedStreamTools.readCompressed(new FileInputStream(saveFolder + "WeatherData_" + dim.location().toString().replace(":", "_") + ".dat"));
                 File tmp = (new File(saveFolder + "WeatherData_" + dim.location().toString().replace(":", "_") + "_BACKUP0.dat"));
                 if (tmp.exists())
@@ -323,25 +259,19 @@ public class WeatherManagerServer extends WeatherManager
                 if ((new File(saveFolder + "WeatherData_" + dim.location().toString().replace(":", "_") + ".dat").exists()))
                     FileUtils.copyFile((new File(saveFolder + "WeatherData_" + dim.location().toString().replace(":", "_") + ".dat")), (new File(saveFolder + "WeatherData_" + dim.location().toString().replace(":", "_") + "_BACKUP0.dat")));
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             ex.printStackTrace();
             Weather2.warn("Weather2 File: WeatherData.dat failed to load, automatically restoring to backup from previous game run");
-            try
-            {
+            try {
                 if ((new File(saveFolder + "WeatherData_" + dim.location().toString().replace(":", "_") + "_BACKUP0.dat")).exists())
                     mainNBT = CompressedStreamTools.readCompressed(new FileInputStream(saveFolder + "WeatherData_" + dim.location().toString().replace(":", "_") + "_BACKUP0.dat"));
                 else
                     Weather2.warn("Failed to find backup file WeatherData_BACKUP0.dat, nothing loaded");
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
                 Weather2.warn("Completely failed to find backup file WeatherData_BACKUP0.dat, nothing loaded");
             }
         }
-
 
         if (mainNBT.contains("cloudIntensity"))
             cloudIntensity = mainNBT.getFloat("cloudIntensity");
@@ -361,17 +291,13 @@ public class WeatherManagerServer extends WeatherManager
             CompoundNBT nbt = volcanosNBT.getCompound(name);
             VolcanoObject vo = new VolcanoObject(this);
 
-            try
-            {
+            try {
                 vo.readFromNBT(nbt);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
 
             addVolcanoObject(vo);
-
 
             PacketVolcanoObject.create(dim, vo);
         });
@@ -381,17 +307,14 @@ public class WeatherManagerServer extends WeatherManager
         {
             CompoundNBT nbt = frontNBT.getCompound(name);
             Weather2.debug("Front name: " + name);
-            if (name.equals("front_global"))
-            {
+            if (name.equals("front_global")) {
                 globalFront = new FrontObject(this, null, 0);
                 globalFront.readNBT(nbt);
                 fronts.put(globalFront.getUUID(), globalFront);
 
                 Weather2.debug("Loaded global front " + globalFront.getUUID().toString());
                 PacketFrontObject.create(world.dimension(), globalFront);
-            }
-            else
-            {
+            } else {
                 FrontObject front = new FrontObject(this, new Vec3(nbt.getInt("layer"), nbt.getDouble("posX"), nbt.getDouble("posZ")), nbt.getInt("layer"));
                 front.readNBT(nbt);
                 fronts.put(front.getUUID(), front);
@@ -400,8 +323,7 @@ public class WeatherManagerServer extends WeatherManager
             }
         });
 
-        if (globalFront == null)
-        {
+        if (globalFront == null) {
             globalFront = new FrontObject(this, null, 0);
             fronts.put(globalFront.getUUID(), globalFront);
             Weather2.debug("Created a new global front " + globalFront.getUUID().toString());
@@ -411,90 +333,54 @@ public class WeatherManagerServer extends WeatherManager
         CompoundNBT weatherNBT = mainNBT.getCompound("stormData");
         weatherNBT.getAllKeys().forEach(name ->
         {
-            try
-            {
-                CompoundNBT nbt = weatherNBT.getCompound(name);
+            CompoundNBT nbt = weatherNBT.getCompound(name);
+            FrontObject front = getFront(nbt.getUUID("frontUUID"));
+            WeatherObject wo = null;
 
-
-                FrontObject front = null;
-                if (nbt.hasUUID("frontUUID"))
-                {
-                    UUID frontUUID = nbt.getUUID("frontUUID");
-                    if (frontUUID != null)
-                    {
-                        front = getFront(frontUUID);
-                    }
-                }
-
-
-                if (front == null)
-                    front = globalFront;
-
-                WeatherObject wo = null;
-
-                if (!nbt.contains("weatherObjectType"))
-                {
-                    Weather2.warn("Storm " + name + " missing weatherObjectType, skipping...");
-                    return;
-                }
-
-                switch (nbt.getInt("weatherObjectType"))
-                {
-                    case 0:
-                        wo = new StormObject(front);
-                        break;
-                    case 1:
-                        wo = new SandstormObject(this);
-                        break;
-                    default:
-                        Weather2.warn("Non-existent type attempted to load into the weather system. Skipping...");
-                        return;
-                }
-
-                if (wo != null)
-                {
-                    try
-                    {
-                        wo.nbt.setNewNBT(nbt);
-                        wo.nbt.updateCacheFromNew();
-                        wo.readFromNBT();
-                        front.addWeatherObject(wo);
-                        Weather2.debug("Loaded storm " + wo.getUUID().toString());
-                        PacketWeatherObject.create(world.dimension(), wo);
-                    }
-                    catch (Exception ex)
-                    {
-                        ex.printStackTrace();
-                    }
-                }
+            if (front == null) front = globalFront;
+            switch (nbt.getInt("weatherObjectType")) {
+                case 0:
+                    wo = new StormObject(front);
+                    break;
+                case 1:
+                    wo = new SandstormObject(this);
+                    break;
+                default:
+                    Weather2.warn("Non-existant type attempted to load into the weather system. Skipping...");
             }
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
+
+            if (wo != null) {
+                try {
+                    wo.nbt.setNewNBT(nbt);
+                    wo.nbt.updateCacheFromNew();
+                    wo.readFromNBT();
+                    front.addWeatherObject(wo);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                Weather2.debug("Loaded storm " + wo.getUUID().toString());
+                PacketWeatherObject.create(world.dimension(), wo);
             }
         });
         Weather2.debug("Loading Weather2 data successful!");
     }
 
-    public boolean spawnSandstorm(Vec3 posIn)
-    {
-        
+    public boolean spawnSandstorm(Vec3 posIn) {
         int searchRadius = 512;
         double angle = windManager.windAngle;
 
-
         double dirX = -Maths.fastSin(Math.toRadians(angle));
         double dirZ = Maths.fastCos(Math.toRadians(angle));
-        double vecX = dirX * searchRadius/2 * -1;
-        double vecZ = dirZ * searchRadius/2 * -1;
+        double vecX = dirX * searchRadius / 2 * -1;
+        double vecZ = dirZ * searchRadius / 2 * -1;
 
         Random rand = new Random();
 
         BlockPos foundPos = null;
 
         int findTriesMax = 30;
-        for (int i = 0; i < findTriesMax; i++)
-        {
+        for (int i = 0; i < findTriesMax; i++) {
             int x = MathHelper.floor(posIn.posX + vecX + rand.nextInt(searchRadius * 2) - searchRadius);
             int z = MathHelper.floor(posIn.posZ + vecZ + rand.nextInt(searchRadius * 2) - searchRadius);
 
@@ -503,17 +389,13 @@ public class WeatherManagerServer extends WeatherManager
             if (!world.isLoaded(pos)) continue;
             Biome biomeIn = world.getBiome(pos);
 
-            if (SandstormObject.isDesert(biomeIn, true))
-            {
-
+            if (SandstormObject.isDesert(biomeIn, true)) {
                 foundPos = pos;
 
-
-
-                double dirXLeft = -Maths.fastSin(Math.toRadians(angle-90));
-                double dirZLeft = Maths.fastCos(Math.toRadians(angle-90));
-                double dirXRight = -Maths.fastSin(Math.toRadians(angle+90));
-                double dirZRight = Maths.fastCos(Math.toRadians(angle+90));
+                double dirXLeft = -Maths.fastSin(Math.toRadians(angle - 90));
+                double dirZLeft = Maths.fastCos(Math.toRadians(angle - 90));
+                double dirXRight = -Maths.fastSin(Math.toRadians(angle + 90));
+                double dirZRight = Maths.fastCos(Math.toRadians(angle + 90));
 
                 double distLeftRight = 20;
                 BlockPos posLeft = new BlockPos(foundPos.getX() + (dirXLeft * distLeftRight), 0, foundPos.getZ() + (dirZLeft * distLeftRight));
@@ -524,18 +406,13 @@ public class WeatherManagerServer extends WeatherManager
                 if (!world.isLoaded(posRight)) continue;
                 if (!SandstormObject.isDesert(world.getBiome(posRight))) continue;
 
-
-
                 BlockPos posFind = new BlockPos(foundPos);
                 BlockPos posFindLastGoodUpwind = new BlockPos(foundPos);
                 BlockPos posFindLastGoodDownwind = new BlockPos(foundPos);
                 double tickDist = 10;
 
-                while (world.isLoaded(posFind) && SandstormObject.isDesert(world.getBiome(posFind)))
-                {
-
+                while (world.isLoaded(posFind) && SandstormObject.isDesert(world.getBiome(posFind))) {
                     posFindLastGoodUpwind = new BlockPos(posFind);
-
 
                     int xx = MathHelper.floor(posFind.getX() + (dirX * -1D * tickDist));
                     int zz = MathHelper.floor(posFind.getZ() + (dirZ * -1D * tickDist));
@@ -543,14 +420,10 @@ public class WeatherManagerServer extends WeatherManager
                     posFind = new BlockPos(xx, 0, zz);
                 }
 
-
                 posFind = new BlockPos(foundPos);
 
-                while (world.isLoaded(posFind) && SandstormObject.isDesert(world.getBiome(posFind)))
-                {
-
+                while (world.isLoaded(posFind) && SandstormObject.isDesert(world.getBiome(posFind))) {
                     posFindLastGoodDownwind = new BlockPos(posFind);
-
 
                     int xx = MathHelper.floor(posFind.getX() + (dirX * 1D * tickDist));
                     int zz = MathHelper.floor(posFind.getZ() + (dirZ * 1D * tickDist));
@@ -559,10 +432,9 @@ public class WeatherManagerServer extends WeatherManager
                 }
 
                 int minDistanceOfDesertStretchNeeded = 200;
-                double dist = Math.sqrt(posFindLastGoodUpwind.distSqr(posFindLastGoodDownwind));
+                double dist = Math.sqrt(posFindLastGoodUpwind.distSqr(posFindLastGoodDownwind.getX(), posFindLastGoodDownwind.getY(), posFindLastGoodDownwind.getZ(), false));
 
-                if (dist >= minDistanceOfDesertStretchNeeded)
-                {
+                if (dist >= minDistanceOfDesertStretchNeeded) {
                     SandstormObject sandstorm = new SandstormObject(this);
 
                     sandstorm.init();
@@ -581,25 +453,22 @@ public class WeatherManagerServer extends WeatherManager
         return false;
     }
 
-    public void playerJoinedWorldSyncFull(ServerPlayerEntity entP)
-    {
+    public void playerJoinedWorldSyncFull(ServerPlayerEntity entP) {
         Weather2.debug((entP == null ? "An unknown player " : "Player " + entP.getDisplayName().getString() + "'s client requested for a full sync"));
 
-
-        fronts.forEach((uuid, front) -> {PacketFrontObject.create(entP, front); front.getWeatherObjects().forEach(wo -> PacketWeatherObject.create(entP, wo));});
-
+        fronts.forEach((uuid, front) -> {
+            PacketFrontObject.create(entP, front);
+            front.getWeatherObjects().forEach(wo -> PacketWeatherObject.create(entP, wo));
+        });
 
         volcanoObjects.forEach(vo -> PacketVolcanoObject.create(entP, vo));
     }
 
-
-    public void nbtStormsForIMC()
-    {
+    public void nbtStormsForIMC() {
         CompoundNBT nbt = new CompoundNBT();
         List<WeatherObject> list = getWeatherObjects();
         for (WeatherObject wo : list)
-            if (wo instanceof IWeatherRain && ((IWeatherRain)wo).hasDownfall() || wo instanceof IWeatherStaged && ((IWeatherStaged)wo).getStage() > 0)
-            {
+            if (wo instanceof IWeatherRain && ((IWeatherRain) wo).hasDownfall() || wo instanceof IWeatherStaged && wo.getStage() > 0) {
                 wo.writeToNBT();
                 nbt.put("storm_" + wo.getUUID().toString(), wo.nbt.getNewNBT());
             }
@@ -608,14 +477,12 @@ public class WeatherManagerServer extends WeatherManager
             InterModComms.sendTo(Weather2.MODID, "weather.storms", () -> nbt);
     }
 
-    protected boolean canSpawnWeather(int type)
-    {
+    protected boolean canSpawnWeather(int type) {
         if (!EZConfigParser.isWeatherEnabled(world.dimension().location().toString()))
             return false;
         long ticks;
 
-        switch(type)
-        {
+        switch (type) {
             case 0:
                 ticks = ticksFrontFormed - world.getGameTime();
                 if (ticks > ConfigStorm.storm_spawn_delay)
@@ -627,7 +494,6 @@ public class WeatherManagerServer extends WeatherManager
                     ticksStormFormed = world.getGameTime() + ConfigStorm.storm_spawn_delay;
                 return (!ConfigStorm.disable_tornados || !ConfigStorm.disable_cyclones) && ticksStormFormed < world.getGameTime() && systems.size() < ConfigStorm.max_weather_objects;
             case 2:
-                
                 return false;
             default:
                 return false;

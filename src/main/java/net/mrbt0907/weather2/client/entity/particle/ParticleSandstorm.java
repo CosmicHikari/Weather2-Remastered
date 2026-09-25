@@ -1,10 +1,10 @@
 package net.mrbt0907.weather2.client.entity.particle;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.corosus.extendedrenderer.particle.entity.ParticleTexFX;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.world.ClientWorld;
-import net.extendedrenderer.particle.entity.ParticleTexFX;
 
 public class ParticleSandstorm extends ParticleTexFX {
 
@@ -19,7 +19,10 @@ public class ParticleSandstorm extends ParticleTexFX {
         super(worldIn, posXIn, posYIn, posZIn, mX, mY, mZ, par8Item);
     }
 
-    
+    /**
+     * TODO: prevent rendering of particle if outside visible area of thick sandstorm fog
+     * based on fps changes between performance settings, I suspect game is taking fps hit trying to render particles player cant see anyways due to sandstorm fog effect
+     */
 
     @Override
     public void render(IVertexBuilder buffer, ActiveRenderInfo renderInfo, float partialTicks) {

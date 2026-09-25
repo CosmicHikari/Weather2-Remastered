@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "weather2:lcd_1"
+    ]
+  },
+  "criteria": {
+    "has_lcd_0": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "weather2:lcd_0"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "weather2:lcd_1"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_lcd_0",
+      "has_the_recipe"
+    ]
+  ]
+}

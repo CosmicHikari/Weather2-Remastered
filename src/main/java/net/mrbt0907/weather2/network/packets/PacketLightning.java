@@ -8,10 +8,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.InterModComms;
 import net.mrbt0907.weather2.Weather2;
 
-public class PacketLightning extends PacketBase
-{
-    public static void spawnLightning(RegistryKey<World> dimension, Entity entity)
-    {
+public class PacketLightning extends PacketBase {
+    public static void spawnLightning(RegistryKey<World> dimension, Entity entity) {
         CompoundNBT nbt = new CompoundNBT();
         nbt.putInt("posX", MathHelper.floor(entity.getX()));
         nbt.putInt("posY", MathHelper.floor(entity.getY()));
@@ -21,8 +19,7 @@ public class PacketLightning extends PacketBase
         InterModComms.sendTo(Weather2.MODID, "weather.lightning", () -> nbt);
     }
 
-    public static void spawnInvisibleLightning(RegistryKey<World> dimension, double x, double y, double z)
-    {
+    public static void spawnInvisibleLightning(RegistryKey<World> dimension, double x, double y, double z) {
         CompoundNBT nbt = new CompoundNBT();
         nbt.putInt("posX", MathHelper.floor(x));
         nbt.putInt("posY", MathHelper.floor(y));

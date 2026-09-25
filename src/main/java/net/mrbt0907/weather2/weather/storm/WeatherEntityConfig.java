@@ -1,8 +1,7 @@
 package net.mrbt0907.weather2.weather.storm;
 
 
-public class WeatherEntityConfig
-{
+public class WeatherEntityConfig {
     public static int TYPE_SPOUT = 0;
     public static int TYPE_TORNADO = 1;
     public static int TYPE_HURRICANE = 2;

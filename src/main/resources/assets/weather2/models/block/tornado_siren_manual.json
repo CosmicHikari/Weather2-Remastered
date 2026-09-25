@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "weather2:blocks/tornado_siren_manual"
+    "all": "weather2:block/tornado_siren_manual"
   }
 }

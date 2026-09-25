@@ -16,16 +16,18 @@
   ],
   "client": [
     "accessor.ActiveRenderInfoAccessor",
+    "accessor.AudioStreamManagerAccessor",
     "accessor.ClientPlayerEntityAccessor",
     "accessor.ClientWorldAccessor",
     "accessor.LightTextureAccessor",
+    "accessor.LocatableSoundAccessor",
     "accessor.ParticleAccessor",
     "accessor.ParticleManagerAccessor",
     "accessor.SpriteTexturedParticleAccessor",
     "accessor.TextureAtlasSpriteAccessor",
     "injection.MixinEntityRenderer",
     "injection.MixinLevelRenderer",
-    "injection.MixinSoundManager",
-    "injection.MixinSoundSystem"
+    "injection.MixinSoundSystem",
+    "injection.MixinWorldRenderer"
   ]
 }

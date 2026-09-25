@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "weather2:antenna_0"
+    ]
+  },
+  "criteria": {
+    "has_motor": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "weather2:motor"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "weather2:antenna_0"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_motor",
+      "has_the_recipe"
+    ]
+  ]
+}

@@ -6,8 +6,7 @@ import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
 
-public class RenderWeatherDeflector extends TileEntityRenderer<TileEntity>
-{
+public class RenderWeatherDeflector extends TileEntityRenderer<TileEntity> {
     public RenderWeatherDeflector(TileEntityRendererDispatcher rendererDispatcherIn) {
         super(rendererDispatcherIn);
     }

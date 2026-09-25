@@ -4,26 +4,23 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.SharedConstants;
-import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.lwjgl.glfw.GLFW;
 
 @OnlyIn(Dist.CLIENT)
-public class GuiBetterTextField extends AbstractGui
-{
+public class GuiBetterTextField extends AbstractGui {
+    public final String defaultText;
+    public final String originalText;
     public FontRenderer fontRenderer;
     public int xPos;
     public int yPos;
     public int width;
     public int height;
-
-    public final String defaultText;
-    public final String originalText;
     public String text = "";
     public int maxStringLength = 10000;
     public int cursorCounter;
@@ -39,8 +36,7 @@ public class GuiBetterTextField extends AbstractGui
     public boolean visible = true;
     public boolean hasChanged;
 
-    public GuiBetterTextField(FontRenderer fontRenderer, int x, int y, int width, int height, String text, String defaultText)
-    {
+    public GuiBetterTextField(FontRenderer fontRenderer, int x, int y, int width, int height, String text, String defaultText) {
         this.fontRenderer = fontRenderer;
         this.xPos = x;
         this.yPos = y;
@@ -50,18 +46,19 @@ public class GuiBetterTextField extends AbstractGui
         this.defaultText = defaultText;
     }
 
-    public void updateChange()
-    {
+    public void updateChange() {
         hasChanged = !text.equals(originalText);
     }
 
-    public void updateCursorCounter()
-    {
+    public void updateCursorCounter() {
         ++cursorCounter;
     }
 
-    public void setText(String str)
-    {
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String str) {
         if (str.length() > maxStringLength)
             text = str.substring(0, maxStringLength);
         else
@@ -70,20 +67,13 @@ public class GuiBetterTextField extends AbstractGui
         setCursorPositionEnd();
     }
 
-    public String getText()
-    {
-        return text;
-    }
-
-    public String getSelectedtext()
-    {
+    public String getSelectedtext() {
         int i = cursorPosition < selectionEnd ? cursorPosition : selectionEnd;
         int j = cursorPosition < selectionEnd ? selectionEnd : cursorPosition;
         return text.substring(i, j);
     }
 
-    public void writeText(String str)
-    {
+    public void writeText(String str) {
         String s1 = "";
         String s2 = SharedConstants.filterText(str);
         int i = cursorPosition < selectionEnd ? cursorPosition : selectionEnd;
@@ -95,13 +85,10 @@ public class GuiBetterTextField extends AbstractGui
 
         int l;
 
-        if (k < s2.length())
-        {
+        if (k < s2.length()) {
             s1 = s1 + s2.substring(0, k);
             l = k;
-        }
-        else
-        {
+        } else {
             s1 = s1 + s2;
             l = s2.length();
         }
@@ -113,10 +100,8 @@ public class GuiBetterTextField extends AbstractGui
         moveCursorBy(i - selectionEnd + l);
     }
 
-    public void deleteWords(int num)
-    {
-        if (text.length() != 0)
-        {
+    public void deleteWords(int num) {
+        if (text.length() != 0) {
             if (selectionEnd != cursorPosition)
                 writeText("");
             else
@@ -124,14 +109,11 @@ public class GuiBetterTextField extends AbstractGui
         }
     }
 
-    public void deleteFromCursor(int num)
-    {
-        if (text.length() != 0)
-        {
+    public void deleteFromCursor(int num) {
+        if (text.length() != 0) {
             if (selectionEnd != cursorPosition)
                 writeText("");
-            else
-            {
+            else {
                 boolean flag = num < 0;
                 int j = flag ? cursorPosition + num : cursorPosition;
                 int k = flag ? cursorPosition : cursorPosition + num;
@@ -151,33 +133,27 @@ public class GuiBetterTextField extends AbstractGui
         }
     }
 
-    public int getNthWordFromCursor(int n)
-    {
+    public int getNthWordFromCursor(int n) {
         return getNthWordFromPos(n, getCursorPosition());
     }
 
-    public int getNthWordFromPos(int n, int pos)
-    {
+    public int getNthWordFromPos(int n, int pos) {
         return func_73798_a(n, getCursorPosition(), true);
     }
 
-    public int func_73798_a(int n, int pos, boolean skipSpaces)
-    {
+    public int func_73798_a(int n, int pos, boolean skipSpaces) {
         int k = pos;
         boolean flag1 = n < 0;
         int l = Math.abs(n);
 
         for (int i1 = 0; i1 < l; ++i1)
-            if (flag1)
-            {
+            if (flag1) {
                 while (skipSpaces && k > 0 && text.charAt(k - 1) == 32)
                     --k;
 
                 while (k > 0 && text.charAt(k - 1) != 32)
                     --k;
-            }
-            else
-            {
+            } else {
                 int j1 = text.length();
                 k = text.indexOf(32, k);
 
@@ -191,40 +167,21 @@ public class GuiBetterTextField extends AbstractGui
         return k;
     }
 
-    public void moveCursorBy(int num)
-    {
+    public void moveCursorBy(int num) {
         setCursorPosition(selectionEnd + num);
     }
 
-    public void setCursorPosition(int pos)
-    {
-        cursorPosition = pos;
-        int j = text.length();
-
-        if (cursorPosition < 0)
-            cursorPosition = 0;
-
-        if (cursorPosition > j)
-            cursorPosition = j;
-
-        setSelectionPos(cursorPosition);
-    }
-
-    public void setCursorPositionZero()
-    {
+    public void setCursorPositionZero() {
         setCursorPosition(0);
     }
 
-    public void setCursorPositionEnd()
-    {
+    public void setCursorPositionEnd() {
         setCursorPosition(text.length());
     }
 
-    public boolean textboxKeyTyped(char typedChar, int keyCode)
-    {
+    public boolean textboxKeyTyped(char typedChar, int keyCode) {
         if (isEnabled && isFocused)
-            switch (typedChar)
-            {
+            switch (typedChar) {
                 case 1:
                     setCursorPositionEnd();
                     setSelectionPos(0);
@@ -240,8 +197,7 @@ public class GuiBetterTextField extends AbstractGui
                     writeText("");
                     return true;
                 default:
-                    switch (keyCode)
-                    {
+                    switch (keyCode) {
                         case GLFW.GLFW_KEY_BACKSPACE:
                             if (Screen.hasControlDown())
                                 deleteWords(-1);
@@ -289,12 +245,10 @@ public class GuiBetterTextField extends AbstractGui
                                 deleteFromCursor(1);
                             return true;
                         default:
-                            if (SharedConstants.isAllowedChatCharacter(typedChar))
-                            {
+                            if (SharedConstants.isAllowedChatCharacter(typedChar)) {
                                 writeText(Character.toString(typedChar));
                                 return true;
-                            }
-                            else
+                            } else
                                 return false;
                     }
             }
@@ -302,16 +256,14 @@ public class GuiBetterTextField extends AbstractGui
             return false;
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
-    {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         boolean flag = mouseX >= xPos && mouseX < xPos + width && mouseY >= yPos && mouseY < yPos + height;
 
         if (canLoseFocus)
             setFocused(isEnabled && flag);
 
-        if (isFocused && (button == 0 || button == 1))
-        {
-            int l = (int)mouseX - xPos;
+        if (isFocused && (button == 0 || button == 1)) {
+            int l = (int) mouseX - xPos;
 
             if (enableBackgroundDrawing)
                 l -= 4;
@@ -319,8 +271,7 @@ public class GuiBetterTextField extends AbstractGui
             String s = fontRenderer.plainSubstrByWidth(text.substring(lineScrollOffset), getWidth());
             setCursorPosition(fontRenderer.plainSubstrByWidth(s, l).length() + lineScrollOffset);
 
-            if (flag && (Screen.hasShiftDown()))
-            {
+            if (flag && (Screen.hasShiftDown())) {
                 if (button == 0)
                     if (text.equals("true"))
                         text = "false";
@@ -338,13 +289,10 @@ public class GuiBetterTextField extends AbstractGui
         return flag;
     }
 
-    public void drawTextBox(MatrixStack matrixStack)
-    {
-        if (getVisible())
-        {
+    public void drawTextBox(MatrixStack matrixStack) {
+        if (getVisible()) {
             updateCursorCounter();
-            if (getEnableBackgroundDrawing())
-            {
+            if (getEnableBackgroundDrawing()) {
                 fill(matrixStack, xPos - 1, yPos - 1, xPos + width + 1, yPos + height + 1, isEnabled ? isFocused ? hasChanged ? 0xFFAACCFF : 0xFF88AADD : hasChanged ? 0xFF75AA75 : 0xFFAAAAAA : 0xFFAA6060);
                 fill(matrixStack, xPos, yPos, xPos + width, yPos + height, 0x70000000);
             }
@@ -362,8 +310,7 @@ public class GuiBetterTextField extends AbstractGui
             if (k > s.length())
                 k = s.length();
 
-            if (s.length() > 0)
-            {
+            if (s.length() > 0) {
                 String s1 = flag ? s.substring(0, j) : s;
                 j1 = fontRenderer.drawShadow(matrixStack, s1, l, i1, i);
             }
@@ -373,8 +320,7 @@ public class GuiBetterTextField extends AbstractGui
 
             if (!flag)
                 k1 = j > 0 ? l + width : l;
-            else if (flag2)
-            {
+            else if (flag2) {
                 k1 = j1 - 1;
                 --j1;
             }
@@ -382,35 +328,30 @@ public class GuiBetterTextField extends AbstractGui
             if (s.length() > 0 && flag && j < s.length())
                 fontRenderer.drawShadow(matrixStack, s.substring(j), j1, i1, i);
 
-            if (flag1)
-            {
+            if (flag1) {
                 if (flag2)
                     AbstractGui.fill(matrixStack, k1, i1 - 1, k1 + 1, i1 + 1 + fontRenderer.lineHeight, -3092272);
                 else
                     fontRenderer.drawShadow(matrixStack, "_", k1, i1, i);
             }
 
-            if (k != j)
-            {
+            if (k != j) {
                 int l1 = l + fontRenderer.width(s.substring(0, k));
                 drawCursorVertical(matrixStack, k1, i1 - 1, l1 - 1, i1 + 1 + fontRenderer.lineHeight);
             }
         }
     }
 
-    private void drawCursorVertical(MatrixStack matrixStack, int startX, int startY, int endX, int endY)
-    {
+    private void drawCursorVertical(MatrixStack matrixStack, int startX, int startY, int endX, int endY) {
         int i1;
 
-        if (startX < endX)
-        {
+        if (startX < endX) {
             i1 = startX;
             startX = endX;
             endX = i1;
         }
 
-        if (startY < endY)
-        {
+        if (startY < endY) {
             i1 = startY;
             startY = endY;
             endY = i1;
@@ -425,72 +366,72 @@ public class GuiBetterTextField extends AbstractGui
         RenderSystem.enableTexture();
     }
 
-    public void setMaxStringLength(int length)
-    {
+    public int getMaxStringLength() {
+        return maxStringLength;
+    }
+
+    public void setMaxStringLength(int length) {
         maxStringLength = length;
         if (text.length() > length)
             text = text.substring(0, length);
     }
 
-    public int getMaxStringLength()
-    {
-        return maxStringLength;
-    }
-
-    public int getCursorPosition()
-    {
+    public int getCursorPosition() {
         return cursorPosition;
     }
 
-    public boolean getEnableBackgroundDrawing()
-    {
+    public void setCursorPosition(int pos) {
+        cursorPosition = pos;
+        int j = text.length();
+
+        if (cursorPosition < 0)
+            cursorPosition = 0;
+
+        if (cursorPosition > j)
+            cursorPosition = j;
+
+        setSelectionPos(cursorPosition);
+    }
+
+    public boolean getEnableBackgroundDrawing() {
         return enableBackgroundDrawing;
     }
 
-    public void setEnableBackgroundDrawing(boolean enable)
-    {
+    public void setEnableBackgroundDrawing(boolean enable) {
         enableBackgroundDrawing = enable;
     }
 
-    public void setTextColor(int color)
-    {
+    public void setTextColor(int color) {
         enabledColor = color;
     }
 
-    public void setDisabledTextColour(int color)
-    {
+    public void setDisabledTextColour(int color) {
         disabledColor = color;
     }
 
-    public void setFocused(boolean focused)
-    {
+    public boolean isFocused() {
+        return isFocused;
+    }
+
+    public void setFocused(boolean focused) {
         if (focused && !isFocused)
             cursorCounter = 0;
         isFocused = focused;
     }
 
-    public boolean isFocused()
-    {
-        return isFocused;
-    }
-
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         isEnabled = enabled;
     }
 
-    public int getSelectionEnd()
-    {
+    public int getSelectionEnd() {
         return selectionEnd;
     }
 
-    public int getWidth()
-    {
+    public int getWidth() {
         return getEnableBackgroundDrawing() ? width - 8 : width;
     }
 
-    public void setSelectionPos(int pos)
-    {
+    public void setSelectionPos(int pos) {
         int j = text.length();
 
         if (pos > j)
@@ -501,8 +442,7 @@ public class GuiBetterTextField extends AbstractGui
 
         selectionEnd = pos;
 
-        if (fontRenderer != null)
-        {
+        if (fontRenderer != null) {
             if (lineScrollOffset > j)
                 lineScrollOffset = j;
 
@@ -526,18 +466,15 @@ public class GuiBetterTextField extends AbstractGui
         }
     }
 
-    public void setCanLoseFocus(boolean canLose)
-    {
+    public void setCanLoseFocus(boolean canLose) {
         canLoseFocus = canLose;
     }
 
-    public boolean getVisible()
-    {
+    public boolean getVisible() {
         return visible;
     }
 
-    public void setVisible(boolean isVisible)
-    {
+    public void setVisible(boolean isVisible) {
         visible = isVisible;
     }
 }

@@ -1,7 +1,5 @@
 package net.mrbt0907.weather2.block;
 
-import java.util.Random;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
@@ -22,39 +20,35 @@ import net.mrbt0907.weather2.util.Maths.Vec3;
 import net.mrbt0907.weather2.weather.WeatherManagerServer;
 import net.mrbt0907.weather2.weather.storm.WeatherObject;
 
-public class BlockSensor extends Block
-{
+import java.util.Random;
+
+public class BlockSensor extends Block {
 
     public static final IntegerProperty POWER = IntegerProperty.create("power", 0, 15);
 
-    public BlockSensor()
-    {
+    public BlockSensor() {
         super(Block.Properties.of(Material.CLAY).strength(0.6F, 10.0F));
         this.registerDefaultState(this.stateDefinition.any().setValue(POWER, Integer.valueOf(0)));
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public void randomTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random random)
-    {
+    public void randomTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random random) {
 
         updateSensor(worldIn, pos, state);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public void tick(BlockState state, ServerWorld world, BlockPos pos, Random rand)
-    {
+    public void tick(BlockState state, ServerWorld world, BlockPos pos, Random rand) {
         updateSensor(world, pos, state);
         world.getBlockTicks().scheduleTick(pos, this, 100);
     }
 
-    private void updateSensor(ServerWorld world, BlockPos pos, BlockState state)
-    {
+    private void updateSensor(ServerWorld world, BlockPos pos, BlockState state) {
         WeatherManagerServer wms = ServerTickHandler.dimensionSystems.get(world.dimension().location());
 
-        if (wms != null)
-        {
+        if (wms != null) {
             WeatherObject wo = wms.getWorstWeather(new Vec3(pos.getX(), pos.getY(), pos.getZ()), ConfigMisc.sensor_scan_range, Stage.TORNADO.getStage(), Integer.MAX_VALUE);
             if (wo != null)
                 world.setBlock(pos, state.setValue(POWER, 15), 3);
@@ -77,21 +71,18 @@ public class BlockSensor extends Block
 
     @Override
     @SuppressWarnings("deprecation")
-    public int getSignal(BlockState blockState, IBlockReader blockAccess, BlockPos pos, Direction side)
-    {
+    public int getSignal(BlockState blockState, IBlockReader blockAccess, BlockPos pos, Direction side) {
         return blockState.getValue(POWER).intValue();
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public boolean isSignalSource(BlockState state)
-    {
+    public boolean isSignalSource(BlockState state) {
         return true;
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
-    {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(POWER);
     }
 }

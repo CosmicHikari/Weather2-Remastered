@@ -7,35 +7,29 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockReader;
 import net.mrbt0907.weather2.block.tile.TileRadar;
 
-public class BlockNewRadar extends BlockMachine
-{
+public class BlockNewRadar extends BlockMachine {
     private int tier = 0;
 
-    public BlockNewRadar()
-    {
+    public BlockNewRadar() {
         super(Material.CLAY);
     }
 
-    public BlockNewRadar(int tier)
-    {
+    public BlockNewRadar(int tier) {
         this();
         this.tier = tier;
     }
 
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
-    {
+    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
         return new TileRadar(tier);
     }
 
     @Override
-    public BlockRenderType getRenderShape(BlockState state)
-    {
+    public BlockRenderType getRenderShape(BlockState state) {
         return BlockRenderType.MODEL;
     }
 
-    public int getTier()
-    {
+    public int getTier() {
         return tier;
     }
 }

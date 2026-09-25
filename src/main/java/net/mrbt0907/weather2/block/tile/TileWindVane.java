@@ -9,15 +9,12 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.mrbt0907.weather2.api.WindReader;
-import net.mrbt0907.weather2.registry.BlockRegistry;
 import net.mrbt0907.weather2.registry.TileEntityRegistry;
 import net.mrbt0907.weather2.util.Maths;
 import net.mrbt0907.weather2.util.Maths.Vec3;
 import net.mrbt0907.weather2.util.WeatherUtilEntity;
 
-public class TileWindVane extends TileEntity implements ITickableTileEntity
-{
-
+public class TileWindVane extends TileEntity implements ITickableTileEntity {
 
 
     public float smoothAngle = 0;
@@ -31,35 +28,30 @@ public class TileWindVane extends TileEntity implements ITickableTileEntity
 
     public boolean isOutsideCached = false;
 
-    public TileWindVane()
-    {
+    public TileWindVane() {
         this(TileEntityRegistry.WIND_VANE_TILE.get());
     }
 
-    public TileWindVane(TileEntityType<?> tileEntityTypeIn)
-    {
+    public TileWindVane(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
     }
 
     @Override
-    public void tick()
-    {
+    public void tick() {
         if (level.isClientSide) {
 
             if (level.getGameTime() % 40 == 0) {
-                isOutsideCached = WeatherUtilEntity.isPosOutside(level, new Vec3(worldPosition.getX()+0.5F, worldPosition.getY()+0.5F, worldPosition.getZ()+0.5F));
+                isOutsideCached = WeatherUtilEntity.isPosOutside(level, new Vec3(worldPosition.getX() + 0.5F, worldPosition.getY() + 0.5F, worldPosition.getZ() + 0.5F));
             }
 
-            if (isOutsideCached)
-            {
+            if (isOutsideCached) {
                 float targetAngle = WindReader.getWindAngle(level, new Vec3(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
                 float windSpeed = WindReader.getWindSpeed(level, new Vec3(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
 
-                if (smoothAngle > 180) smoothAngle-=360;
-                if (smoothAngle < -180) smoothAngle+=360;
+                if (smoothAngle > 180) smoothAngle -= 360;
+                if (smoothAngle < -180) smoothAngle += 360;
 
                 float bestMove = Maths.wrapDegrees(targetAngle - smoothAngle);
-
 
 
                 smoothAngleAdj = windSpeed;
@@ -79,10 +71,7 @@ public class TileWindVane extends TileEntity implements ITickableTileEntity
                     }
 
 
-
                     smoothAngleRotationalVelAccel *= 0.80F;
-
-
 
 
                 }
@@ -97,14 +86,12 @@ public class TileWindVane extends TileEntity implements ITickableTileEntity
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT var1)
-    {
+    public CompoundNBT save(CompoundNBT var1) {
         return super.save(var1);
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT var1)
-    {
+    public void load(BlockState state, CompoundNBT var1) {
         super.load(state, var1);
     }
 }

@@ -31,7 +31,14 @@ public abstract class MixinEntityRenderer {
             at = @At("HEAD"))
     private void extendFarPlane(ActiveRenderInfo activeRenderInfo, float partialTicks,
                                 boolean useFov, CallbackInfoReturnable<Matrix4f> cir) {
-        renderDistance = NewSceneEnhancer.instance().renderDistance * 1.5F;
+
+        float sceneDist = NewSceneEnhancer.instance().renderDistance;
+
+        if (sceneDist <= 0.0F) {
+            sceneDist = MC.options.renderDistance * 16.0F;
+        }
+
+        this.renderDistance = sceneDist * 1.3F;
     }
 
     @Inject(

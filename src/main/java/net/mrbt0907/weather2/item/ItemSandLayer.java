@@ -21,17 +21,13 @@ import net.mrbt0907.weather2.registry.BlockRegistry;
 
 import javax.annotation.Nullable;
 
-public class ItemSandLayer extends ItemBlockBetter
-{
-    public ItemSandLayer(Block block, Item.Properties properties)
-    {
+public class ItemSandLayer extends ItemBlockBetter {
+    public ItemSandLayer(Block block, Item.Properties properties) {
         super(block, properties);
     }
 
-
     @Override
-    public ActionResultType useOn(ItemUseContext context)
-    {
+    public ActionResultType useOn(ItemUseContext context) {
         World world = context.getLevel();
         BlockPos pos = context.getClickedPos();
         BlockState state = world.getBlockState(pos);
@@ -40,42 +36,34 @@ public class ItemSandLayer extends ItemBlockBetter
         ItemStack stack = context.getItemInHand();
         Direction facing = context.getClickedFace();
 
-        if (player != null && !stack.isEmpty() && player.mayUseItemAt(pos, facing, stack))
-        {
+        if (player != null && !stack.isEmpty() && player.mayUseItemAt(pos, facing, stack)) {
             BlockPos blockpos = pos;
 
-            if ((facing != Direction.UP || block != this.block) && !state.canBeReplaced(new BlockItemUseContext(context)))
-            {
+            if ((facing != Direction.UP || block != this.block) && !state.canBeReplaced(new BlockItemUseContext(context))) {
                 blockpos = pos.relative(facing);
                 state = world.getBlockState(blockpos);
                 block = state.getBlock();
             }
 
-            if (block == this.block)
-            {
+            if (block == this.block) {
                 int layers = state.getValue(BlockSandLayer.LAYERS);
 
-                if (layers < 8)
-                {
+                if (layers < 8) {
                     BlockState newState = state.setValue(BlockSandLayer.LAYERS, layers + 1);
                     VoxelShape voxelshape = newState.getCollisionShape(world, blockpos);
 
-
                     if (!voxelshape.isEmpty() && world.isUnobstructed(newState, blockpos, ISelectionContext.of(player)) &&
-                            world.setBlock(blockpos, newState, 10))
-                    {
+                            world.setBlock(blockpos, newState, 10)) {
                         SoundType soundtype = this.block.getSoundType(newState, world, blockpos, player);
                         world.playSound(player, blockpos, soundtype.getPlaceSound(), SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
 
-                        if (player == null || !player.abilities.instabuild)
-                        {
+                        if (!player.abilities.instabuild) {
                             stack.shrink(1);
                         }
                         return ActionResultType.sidedSuccess(world.isClientSide);
                     }
                 }
             }
-
 
             BlockRayTraceResult rayTraceResult = new BlockRayTraceResult(
                     context.getClickLocation(),
@@ -84,24 +72,19 @@ public class ItemSandLayer extends ItemBlockBetter
                     false
             );
             return super.useOn(new ItemUseContext(player, context.getHand(), rayTraceResult));
-        }
-        else
-        {
+        } else {
             return ActionResultType.FAIL;
         }
     }
 
     @Nullable
     @Override
-    protected BlockItemUseContext getBlockItemUseContext(BlockItemUseContext context)
-    {
+    protected BlockItemUseContext getBlockItemUseContext(BlockItemUseContext context) {
         World world = context.getLevel();
         BlockPos pos = context.getClickedPos();
         BlockState state = world.getBlockState(pos);
 
-
-        if (state.getBlock() == BlockRegistry.sand_layer.get() && state.getValue(BlockSandLayer.LAYERS) < 8)
-        {
+        if (state.getBlock() == BlockRegistry.sand_layer.get() && state.getValue(BlockSandLayer.LAYERS) < 8) {
             return context;
         }
 
@@ -109,16 +92,12 @@ public class ItemSandLayer extends ItemBlockBetter
     }
 
     @Override
-    protected boolean canPlace(BlockItemUseContext context, BlockState state)
-    {
-        PlayerEntity player = context.getPlayer();
+    protected boolean canPlace(BlockItemUseContext context, BlockState state) {
         World world = context.getLevel();
         BlockPos pos = context.getClickedPos();
         BlockState existingState = world.getBlockState(pos);
 
-
-        if (existingState.getBlock() == BlockRegistry.sand_layer.get() && existingState.getValue(BlockSandLayer.LAYERS) < 8)
-        {
+        if (existingState.getBlock() == BlockRegistry.sand_layer.get() && existingState.getValue(BlockSandLayer.LAYERS) < 8) {
             return true;
         }
 

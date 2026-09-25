@@ -1,0 +1,33 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "key": "disable_sand_layer",
+          "type": "weather2:config_enabled"
+        }
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": [
+          "DDD",
+          "DID",
+          "DDD"
+        ],
+        "key": {
+          "D": {
+            "tag": "forge:sand"
+          },
+          "I": {
+            "item": "weather2:weather_item"
+          }
+        },
+        "result": {
+          "item": "weather2:sand_layer_placeable",
+          "count": 64
+        }
+      }
+    }
+  ]
+}

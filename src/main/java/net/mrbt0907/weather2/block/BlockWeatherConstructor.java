@@ -1,5 +1,6 @@
 package net.mrbt0907.weather2.block;
 
+import net.corosus.coroutillegacy.util.CoroUtilMisc;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -13,33 +14,26 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.mrbt0907.weather2.block.tile.TileWeatherConstructor;
-import net.CoroUtil.util.CoroUtilMisc;
-import net.mrbt0907.weather2.registry.BlockRegistry;
 import net.mrbt0907.weather2.registry.TileEntityRegistry;
 
-public class BlockWeatherConstructor extends Block
-{
-    public BlockWeatherConstructor()
-    {
+public class BlockWeatherConstructor extends Block {
+    public BlockWeatherConstructor() {
         super(Block.Properties.of(Material.CLAY).strength(0.6F, 10.0F));
     }
 
     @Override
-    public boolean hasTileEntity(BlockState state)
-    {
+    public boolean hasTileEntity(BlockState state) {
         return true;
     }
 
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
-    {
+    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
         return new TileWeatherConstructor(TileEntityRegistry.WEATHER_MACHINE_TILE.get());
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos)
-    {
+    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
         return true;
     }
 
@@ -47,18 +41,15 @@ public class BlockWeatherConstructor extends Block
     @SuppressWarnings("deprecation")
     public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
 
-        if (!world.isClientSide && hand == Hand.MAIN_HAND)
-        {
+        if (!world.isClientSide && hand == Hand.MAIN_HAND) {
             TileEntity tile = world.getBlockEntity(pos);
 
-            if (tile instanceof TileWeatherConstructor)
-            {
+            if (tile instanceof TileWeatherConstructor) {
                 TileWeatherConstructor constructor = (TileWeatherConstructor) tile;
                 constructor.cycleWeatherType(player.isCrouching());
                 String msg = "Off";
 
-                switch (constructor.stage)
-                {
+                switch (constructor.stage) {
                     case 1:
                         msg = "Cloud";
                         break;
@@ -92,16 +83,14 @@ public class BlockWeatherConstructor extends Block
 
     @Override
     @SuppressWarnings("deprecation")
-    public void attack(BlockState state, World worldIn, BlockPos pos, PlayerEntity player)
-    {
+    public void attack(BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
         super.attack(state, worldIn, pos, player);
     }
 
-    
+
     @Override
     @SuppressWarnings("deprecation")
-    public BlockRenderType getRenderShape(BlockState state)
-    {
+    public BlockRenderType getRenderShape(BlockState state) {
         return BlockRenderType.MODEL;
     }
 }

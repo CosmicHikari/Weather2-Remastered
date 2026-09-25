@@ -1,6 +1,6 @@
 {
-	"parent": "item/handheld",
-	"textures": {
-		"layer0": "weather2:items/bulb"
-	}
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "weather2:item/bulb"
+  }
 }

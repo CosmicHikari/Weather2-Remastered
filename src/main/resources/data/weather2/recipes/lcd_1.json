@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AAA",
+    "AAA",
+    "AAA"
+  ],
+  "key": {
+    "A": {
+      "item": "weather2:lcd_0"
+    }
+  },
+  "result": {
+    "item": "weather2:lcd_1"
+  }
+}

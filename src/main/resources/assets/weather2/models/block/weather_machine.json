@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "weather2:blocks/weather_machine"
+    "all": "weather2:block/weather_machine"
   }
 }

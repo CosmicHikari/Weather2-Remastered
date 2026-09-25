@@ -2,7 +2,6 @@ package net.mrbt0907.weather2.client.block;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -33,18 +32,15 @@ import net.mrbt0907.weather2.util.WeatherUtil;
 import net.mrbt0907.weather2.weather.WeatherManagerServer;
 import net.mrbt0907.weather2.weather.storm.StormObject;
 
-public class RenderRadar extends TileEntityRenderer<TileEntity>
-{
+public class RenderRadar extends TileEntityRenderer<TileEntity> {
     private static final RenderType ICON_RENDER_TYPE = WeatherRenderTypes.radarIcon(AtlasTexture.LOCATION_BLOCKS);
 
-    public RenderRadar(TileEntityRendererDispatcher dispatcher)
-    {
+    public RenderRadar(TileEntityRendererDispatcher dispatcher) {
         super(dispatcher);
     }
 
     @Override
-    public void render(TileEntity tile, float partialTicks, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay)
-    {
+    public void render(TileEntity tile, float partialTicks, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay) {
         TileRadar radar = (TileRadar) tile;
 
         matrix.pushPose();
@@ -54,9 +50,9 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
         Matrix4f pose = matrix.last().pose();
         float r = radar.renderRange - 0.5F;
         bgBuilder.vertex(pose, -r, 0.002f, -r).color(0f, 0f, 0f, 0.25f).endVertex();
-        bgBuilder.vertex(pose, -r, 0.002f,  r).color(0f, 0f, 0f, 0.25f).endVertex();
-        bgBuilder.vertex(pose,  r, 0.002f,  r).color(0f, 0f, 0f, 0.25f).endVertex();
-        bgBuilder.vertex(pose,  r, 0.002f, -r).color(0f, 0f, 0f, 0.25f).endVertex();
+        bgBuilder.vertex(pose, -r, 0.002f, r).color(0f, 0f, 0f, 0.25f).endVertex();
+        bgBuilder.vertex(pose, r, 0.002f, r).color(0f, 0f, 0f, 0.25f).endVertex();
+        bgBuilder.vertex(pose, r, 0.002f, -r).color(0f, 0f, 0f, 0.25f).endVertex();
 
         matrix.popPose();
 
@@ -64,11 +60,9 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
 
         renderLivingLabel("\u00A7" + '6' + "|", matrix, buffer, 0.5D, 1.2D, 0.5D, 1, 10, 10, playerViewY, 1.0F);
 
-        if (ConfigMisc.debug_mode_radar)
-        {
+        if (ConfigMisc.debug_mode_radar) {
             net.minecraft.entity.player.PlayerEntity player = Minecraft.getInstance().player;
-            if (player != null && ClientTickHandler.weatherManager != null)
-            {
+            if (player != null && ClientTickHandler.weatherManager != null) {
                 NewSceneEnhancer scene = NewSceneEnhancer.instance();
                 WeatherManagerClient wm = ClientTickHandler.weatherManager;
                 float precipStr = Math.abs(scene.rain);
@@ -83,8 +77,7 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
                 renderLivingLabel("\u00A7" + " Today's Storm Probability: " + WeatherManagerServer.stormChanceToday + "%", matrix, buffer, 0.5D, 1.7D, 0.5D, 1, 10, 10, playerViewY, 1.0F);
                 renderLivingLabel("\u00A7" + " -------------------------", matrix, buffer, 0.5D, 2.4D, 0.5D, 1, 10, 10, playerViewY, 1.0F);
 
-                if (radar.system != null && radar.system instanceof StormObject)
-                {
+                if (radar.system != null && radar.system instanceof StormObject) {
                     StormObject system = (StormObject) radar.system;
                     renderLivingLabel("\u00A7" + " Rain/Hail: " + Maths.clamp(Math.round((system.rain - IWeatherRain.MINIMUM_DRIZZLE) * 10.0F / 3.0F) * 0.1F, 0.0F, 100.0F) + "%/" + Maths.clamp(system.hail - 100.0F, 0.0F, 100.0F) + "%", matrix, buffer, 0.5D, 2.5D, 0.5D, 1, 10, 10, playerViewY, 1.0F);
                     renderLivingLabel("\u00A7" + " Stage Complete: " + (((system.intensity - system.stage + 1)) * 100.0F) + "%", matrix, buffer, 0.5D, 2.6D, 0.5D, 1, 10, 10, playerViewY, 1.0F);
@@ -120,16 +113,13 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
 
             matrix.translate(posRenderOffset.posX, 0, posRenderOffset.posZ);
 
-            if (radar.showRating)
-            {
+            if (radar.showRating) {
                 FontRenderer font = Minecraft.getInstance().font;
                 renderLivingLabel(so.type == 0 && !ConfigFront.ShowFrontsOnRadar ? "" : so.typeName, matrix, buffer, 0.5D, so.type == 0 ? 1.54D : 1.5D, 0.5D, 1, font.width(so.typeName), 5, playerViewY, radar.renderAlpha);
             }
 
-            if (so.type == 1 || so.type == 2)
-            {
-                switch (so.stage)
-                {
+            if (so.type == 1 || so.type == 2) {
+                switch (so.stage) {
                     case 0:
                         renderIconNew(matrix, buffer, 0.5D, 1.4D, 0.5D, 16, 16, 0.0F, playerViewY, 0.0F, radar.renderAlpha * 0.5F, ParticleRegistry.radarIconCloud);
                         break;
@@ -161,8 +151,7 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
 
                 if (ConfigMisc.debug_mode_radar && radar.system != null && so.uuid.equals(radar.system.getUUID()))
                     renderLivingLabel(TextFormatting.GOLD + "" + TextFormatting.BOLD + "|", matrix, buffer, 0.5D, 1.2D, 0.5D, 1, 5, 5, playerViewY, radar.renderAlpha);
-                else
-                {
+                else {
                     if (so.stage == Stage.NORMAL.getStage())
                         renderLivingLabel(TextFormatting.GRAY + "|", matrix, buffer, 0.5D, 1.2D, 0.5D, 1, 5, 5, playerViewY, radar.renderAlpha * 0.35F);
                     else if (so.isDying)
@@ -170,11 +159,9 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
                     else
                         renderLivingLabel(TextFormatting.GREEN + "|", matrix, buffer, 0.5D, 1.2D, 0.5D, 1, 5, 5, playerViewY, radar.renderAlpha);
                 }
-            }
-            else if (so.type == 0 && ConfigFront.ShowFrontsOnRadar)
-            {
+            } else if (so.type == 0 && ConfigFront.ShowFrontsOnRadar) {
                 int type = so.name.toLowerCase().contains("stationary") ? 0 : so.name.toLowerCase().contains("warm") ? 2 : so.name.toLowerCase().contains("cold") ? 1 : 3;
-                renderIconNew(matrix, buffer, 0.5D, 1.12D, 0.5D, (int)(64 * radar.renderRange), (int)(64 * radar.renderRange), 90.0F, 0.0F, so.angle, radar.renderAlpha,
+                renderIconNew(matrix, buffer, 0.5D, 1.12D, 0.5D, (int) (64 * radar.renderRange), (int) (64 * radar.renderRange), 90.0F, 0.0F, so.angle, radar.renderAlpha,
                         type == 0 ? ParticleRegistry.radarIconStationaryFront :
                                 type == 1 ? ParticleRegistry.radarIconColdFront :
                                         type == 2 ? ParticleRegistry.radarIconWarmFront :
@@ -183,9 +170,7 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
                     renderLivingLabel(TextFormatting.BOLD + "" + TextFormatting.DARK_GREEN + "|", matrix, buffer, 0.5D, 1.22D, 0.5D, 1, 5, 5, playerViewY, radar.renderAlpha);
                 else
                     renderLivingLabel(TextFormatting.BOLD + "" + TextFormatting.DARK_RED + "|", matrix, buffer, 0.5D, 1.22D, 0.5D, 1, 5, 5, playerViewY, radar.renderAlpha);
-            }
-            else if (so.type > 0)
-            {
+            } else if (so.type > 0) {
                 renderIconNew(matrix, buffer, 0.5D, 1.4D, 0.5D, 16, 16, 0.0F, playerViewY, 0.0F, radar.renderAlpha, ParticleRegistry.radarIconSandstorm);
                 if (!so.isDying)
                     renderLivingLabel("\u00A7" + '2' + "|", matrix, buffer, 0.5D, 1.2D, 0.5D, 1, 5, 5, playerViewY, radar.renderAlpha);
@@ -198,10 +183,11 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
         });
     }
 
-    protected void renderLivingLabel(String text, MatrixStack matrix, IRenderTypeBuffer buffer, double x, double y, double z, int par9, float width, float height, float angle, float alpha)
-    {
-        int hexAlpha = (int)(255 * alpha) << 24;
-        int color = 0xFFFFFF | hexAlpha;
+    protected void renderLivingLabel(String text, MatrixStack matrix, IRenderTypeBuffer buffer, double x, double y, double z, int par9, float width, float height, float angle, float alpha) {
+        if (alpha <= 0.01F || text.isEmpty()) return;
+
+        int hexAlpha = (int) (255 * alpha) << 24;
+        int color = 0xFFFFFF + hexAlpha;
         int borderSize = 2;
 
         FontRenderer font = Minecraft.getInstance().font;
@@ -215,13 +201,12 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
 
         Matrix4f pose = matrix.last().pose();
 
-        if (par9 == 0)
-        {
+        if (par9 == 0) {
             IVertexBuilder bgBuilder = buffer.getBuffer(WeatherRenderTypes.RADAR_BACKGROUND);
             bgBuilder.vertex(pose, -width / 2 - borderSize, -borderSize, 0).color(0f, 0f, 0f, 0.25f).endVertex();
-            bgBuilder.vertex(pose, -width / 2 - borderSize,  height,     0).color(0f, 0f, 0f, 0.25f).endVertex();
-            bgBuilder.vertex(pose,  width / 2 + borderSize,  height,     0).color(0f, 0f, 0f, 0.25f).endVertex();
-            bgBuilder.vertex(pose,  width / 2 + borderSize, -borderSize, 0).color(0f, 0f, 0f, 0.25f).endVertex();
+            bgBuilder.vertex(pose, -width / 2 - borderSize, height, 0).color(0f, 0f, 0f, 0.25f).endVertex();
+            bgBuilder.vertex(pose, width / 2 + borderSize, height, 0).color(0f, 0f, 0f, 0.25f).endVertex();
+            bgBuilder.vertex(pose, width / 2 + borderSize, -borderSize, 0).color(0f, 0f, 0f, 0.25f).endVertex();
         }
 
         font.drawInBatch(text, -width / 2 + borderSize, 0, color, false, pose, buffer, false, 0, 0xF000F0);
@@ -229,8 +214,9 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
         matrix.popPose();
     }
 
-    public void renderIconNew(MatrixStack matrix, IRenderTypeBuffer buffer, double x, double y, double z, int width, int height, float angleX, float angleY, float angleZ, float alpha, TextureAtlasSprite sprite)
-    {
+    public void renderIconNew(MatrixStack matrix, IRenderTypeBuffer buffer, double x, double y, double z, int width, int height, float angleX, float angleY, float angleZ, float alpha, TextureAtlasSprite sprite) {
+        if (alpha <= 0.01F) return;
+
         float f6 = sprite.getU0();
         float f7 = sprite.getU1();
         float f9 = sprite.getV0();
@@ -251,9 +237,9 @@ public class RenderRadar extends TileEntityRenderer<TileEntity>
 
         IVertexBuilder builder = buffer.getBuffer(ICON_RENDER_TYPE);
         builder.vertex(pose, -width / 2 - borderSize, -borderSize, 0).uv(f6, f9).color(1f, 1f, 1f, alpha).endVertex();
-        builder.vertex(pose, (float) -width / 2 - borderSize,  height,     0).uv(f6, f8).color(1f, 1f, 1f, alpha).endVertex();
-        builder.vertex(pose,  width / 2 + borderSize,  height,     0).uv(f7, f8).color(1f, 1f, 1f, alpha).endVertex();
-        builder.vertex(pose,  width / 2 + borderSize, -borderSize, 0).uv(f7, f9).color(1f, 1f, 1f, alpha).endVertex();
+        builder.vertex(pose, (float) -width / 2 - borderSize, height, 0).uv(f6, f8).color(1f, 1f, 1f, alpha).endVertex();
+        builder.vertex(pose, width / 2 + borderSize, height, 0).uv(f7, f8).color(1f, 1f, 1f, alpha).endVertex();
+        builder.vertex(pose, width / 2 + borderSize, -borderSize, 0).uv(f7, f9).color(1f, 1f, 1f, alpha).endVertex();
 
         matrix.popPose();
     }

@@ -1,6 +1,6 @@
 package net.mrbt0907.weather2.event;
 
-import net.CoroUtil.packet.PacketHelper;
+import net.corosus.coroutillegacy.packet.PacketHelper;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

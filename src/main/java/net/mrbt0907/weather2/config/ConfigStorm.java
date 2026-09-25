@@ -83,7 +83,7 @@ public class ConfigStorm implements IConfigEX {
     @Comment("See config file for examples. A list of hurricane stages with the chances for a storm to reach the stage. Use commas and/or spaces to separate each entry. Do not use quotation marks. Use = without spaces to indicate the chance. Chance goes from 0 (0% Chance) to 1 (100% Chance). Accepted formats - stage=chance")
     public static String chances_for_hurricanes = "C5=0.1, C4=2, C3=8.2, C2=10, C1=28, C0=30.5";
 
-
+    //per server storm settings
     @Hidden
     @Enforce
     @Comment("Use global storm instead of per player rates to spawn storms.\nEnable if you want storms to stay at the same rarity no matter how many players are in the server.")
@@ -104,7 +104,7 @@ public class ConfigStorm implements IConfigEX {
     @Enforce
     @Comment("Should Weather2 cancel vanilla rainstorms at all times?")
     public static boolean prevent_vanilla_thunderstorms = true;
-
+    //lightning
     @Enforce
     @IntegerRange(min = 1)
     @Comment("A lightning bolt has a 10 in x chance to catch something on fire")

@@ -8,10 +8,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public class WeatherRenderTypes extends RenderState
-{
-    private WeatherRenderTypes(String name, Runnable setup, Runnable clear) { super(name, setup, clear); }
-
+public class WeatherRenderTypes extends RenderState {
     public static final RenderType RADAR_BACKGROUND = RenderType.create(
             "weather2_radar_background",
             DefaultVertexFormats.POSITION_COLOR,
@@ -19,13 +16,17 @@ public class WeatherRenderTypes extends RenderState
             256,
             RenderType.State.builder()
                     .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-                    .setWriteMaskState(COLOR_DEPTH_WRITE)
+                    .setDepthTestState(LEQUAL_DEPTH_TEST)
+                    .setWriteMaskState(COLOR_WRITE)
                     .setCullState(NO_CULL)
                     .createCompositeState(false)
     );
 
-    public static RenderType radarIcon(ResourceLocation atlasTexture)
-    {
+    private WeatherRenderTypes(String name, Runnable setup, Runnable clear) {
+        super(name, setup, clear);
+    }
+
+    public static RenderType radarIcon(ResourceLocation atlasTexture) {
         return RenderType.create(
                 "weather2_radar_icon",
                 DefaultVertexFormats.POSITION_TEX_COLOR,
@@ -34,6 +35,8 @@ public class WeatherRenderTypes extends RenderState
                 RenderType.State.builder()
                         .setTextureState(new RenderState.TextureState(atlasTexture, false, false))
                         .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                        .setDepthTestState(LEQUAL_DEPTH_TEST)
+                        .setWriteMaskState(COLOR_WRITE)
                         .setAlphaState(DEFAULT_ALPHA)
                         .setCullState(NO_CULL)
                         .createCompositeState(false)

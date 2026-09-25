@@ -14,8 +14,6 @@ import java.util.List;
 public abstract class FoliageReplacerBase {
 
 
-
-
     public BlockState state;
 
     public List<TextureAtlasSprite> sprites = new ArrayList<>();

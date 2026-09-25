@@ -1,8 +1,8 @@
 package net.mrbt0907.weather2.util;
 
-import java.util.UUID;
-
 import net.minecraft.nbt.CompoundNBT;
+
+import java.util.UUID;
 
 
 public class CachedNBTTagCompound {
@@ -15,14 +15,14 @@ public class CachedNBTTagCompound {
         this.cachedData = new CompoundNBT();
     }
 
+    public CompoundNBT getCachedNBT() {
+        return cachedData;
+    }
+
     public void setCachedNBT(CompoundNBT cachedData) {
         if (cachedData == null)
             cachedData = new CompoundNBT();
         this.cachedData = cachedData;
-    }
-
-    public CompoundNBT getCachedNBT() {
-        return cachedData;
     }
 
     public CompoundNBT getNewNBT() {

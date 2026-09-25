@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "A A",
+    "A A",
+    "AAA"
+  ],
+  "key": {
+    "A": {
+      "tag": "forge:glass_panes"
+    }
+  },
+  "result": {
+    "item": "weather2:bulb",
+    "count": 6
+  }
+}

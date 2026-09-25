@@ -1,0 +1,44 @@
+{
+  "advancements": [
+    {
+      "conditions": [
+        {
+          "key": "disable_wind_vane",
+          "type": "weather2:config_enabled"
+        }
+      ],
+      "advancement": {
+        "parent": "minecraft:recipes/root",
+        "rewards": {
+          "recipes": [
+            "weather2:wind_vane"
+          ]
+        },
+        "criteria": {
+          "has_weather_item": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+              "items": [
+                {
+                  "item": "weather2:weather_item"
+                }
+              ]
+            }
+          },
+          "has_the_recipe": {
+            "trigger": "minecraft:recipe_unlocked",
+            "conditions": {
+              "recipe": "weather2:wind_vane"
+            }
+          }
+        },
+        "requirements": [
+          [
+            "has_weather_item",
+            "has_the_recipe"
+          ]
+        ]
+      }
+    }
+  ]
+}

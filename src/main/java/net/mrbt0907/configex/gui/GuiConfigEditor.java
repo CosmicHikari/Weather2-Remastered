@@ -11,20 +11,20 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.mrbt0907.configex.ConfigManager;
 import net.mrbt0907.configex.ConfigModEX;
 import net.mrbt0907.configex.network.NetworkHandler;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 @OnlyIn(Dist.CLIENT)
-public class GuiConfigEditor extends Screen
-{
+public class GuiConfigEditor extends Screen {
     public static final ResourceLocation GUI_TEXTURE = new ResourceLocation(ConfigModEX.MODID, "textures/gui/advanced_gui.png");
     public static final ResourceLocation GUI_BORDER_TEXTURE = new ResourceLocation(ConfigModEX.MODID, "textures/gui/advanced_gui_border.png");
     public static int curIndex = 0;
@@ -39,22 +39,19 @@ public class GuiConfigEditor extends Screen
     public int ySize = 246;
     public boolean changed;
 
-    public GuiConfigEditor()
-    {
+    public GuiConfigEditor() {
         super(new TranslationTextComponent("config.gui.title"));
         this.minecraft = Minecraft.getInstance();
         scrollPane = new GuiConfigScrollPanel(this, minecraft, xStart + 169, 130, 175, 8, 20);
     }
 
     @Override
-    public void tick()
-    {
+    public void tick() {
         super.tick();
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
-    {
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(matrixStack);
         drawBackgroundLayer(matrixStack);
         drawForegroundLayer(matrixStack);
@@ -62,46 +59,40 @@ public class GuiConfigEditor extends Screen
         drawButtons(matrixStack, mouseX, mouseY, partialTicks);
     }
 
-    public void drawButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
-    {
+    public void drawButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 
-    protected void drawForegroundLayer(MatrixStack matrixStack)
-    {
+    protected void drawForegroundLayer(MatrixStack matrixStack) {
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         this.minecraft.getTextureManager().bind(GUI_BORDER_TEXTURE);
         blit(matrixStack, xStart, yStart, 0, 0, 512, 512);
 
-        String title = TextFormatting.BOLD + "" + scrollPane.configs.get(curIndex).name;
+        String title = TextFormatting.BOLD + scrollPane.configs.get(curIndex).name;
         String subtitle = format("title." + (serverMode ? "server" : "client"));
         drawString(matrixStack, font, subtitle, xStart + 160 - font.width(subtitle) / 2, yStart + 23, 16777215);
         drawString(matrixStack, font, title, xStart + 160 - font.width(title) / 2, yStart + 10, 16777215);
         drawString(matrixStack, font, (curIndex + 1) + "/" + scrollPane.configs.size(), xStart + 40, yStart + 226, 16777215);
 
-        if (scrollPane.getSize() == 0)
-        {
+        if (scrollPane.getSize() == 0) {
             String noEntries = TextFormatting.GRAY + format("entries." + (scrollPane.configs.get(curIndex).size() == 0 ? "empty" : "permission"));
             drawString(matrixStack, font, noEntries, xStart + 160 - font.width(noEntries) / 2, yStart + 120, 16777215);
         }
     }
 
-    protected void drawBackgroundLayer(MatrixStack matrixStack)
-    {
+    protected void drawBackgroundLayer(MatrixStack matrixStack) {
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         this.minecraft.getTextureManager().bind(GUI_TEXTURE);
         blit(matrixStack, xStart, yStart, 0, 0, 512, 512);
     }
 
     @Override
-    public boolean isPauseScreen()
-    {
+    public boolean isPauseScreen() {
         return true;
     }
 
     @Override
-    protected void init()
-    {
+    protected void init() {
         int scaledWidth = this.width;
         int scaledHeight = this.height;
         int buttonWidth = 30;
@@ -137,21 +128,18 @@ public class GuiConfigEditor extends Screen
 
         this.addButton(new Button(xStart + 252, yStart + buttonBottomY, buttonWidth + 32, buttonHeight,
                 new TranslationTextComponent("config.gui.exit"), (button) -> {
+            checkForUpdates();
             if (minecraft.player != null && changed)
                 minecraft.player.sendMessage(new TranslationTextComponent("config.gui.save"), minecraft.player.getUUID());
             minecraft.setScreen(null);
         }));
 
-        if (ConfigManager.isSinglePlayer())
-        {
-            if (serverMode)
-            {
+        if (ConfigManager.isSinglePlayer()) {
+            if (serverMode) {
                 serverMode = false;
                 scrollPane.populateData();
             }
-        }
-        else
-        {
+        } else {
             this.addButton(new Button(xStart + 162, yStart + buttonBottomY, buttonWidth + 56, buttonHeight,
                     new TranslationTextComponent(serverMode ? "config.gui.clientmode" : "config.gui.servermode"), (button) -> {
                 checkForUpdates();
@@ -163,12 +151,10 @@ public class GuiConfigEditor extends Screen
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
-    {
-        if (scrollPane.keyPressed(keyCode, scanCode, modifiers))
-        {
-            if (keyCode == 256)
-            {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (scrollPane.keyPressed(keyCode, scanCode, modifiers)) {
+            if (keyCode == 256) {
+                checkForUpdates();
                 if (minecraft.player != null)
                     minecraft.player.sendMessage(new TranslationTextComponent("config.gui." + (changed ? "save" : "nosave")), minecraft.player.getUUID());
                 this.minecraft.setScreen(null);
@@ -179,57 +165,47 @@ public class GuiConfigEditor extends Screen
     }
 
     @Override
-    public boolean charTyped(char c, int modifiers)
-    {
+    public boolean charTyped(char c, int modifiers) {
         if (scrollPane.charTyped(c, modifiers))
             return true;
         return super.charTyped(c, modifiers);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
-    {
-        try
-        {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        try {
             scrollPane.mouseClicked(mouseX, mouseY, button);
             return super.mouseClicked(mouseX, mouseY, button);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             ConfigModEX.error(e);
             return false;
         }
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
-    {
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         if (scrollPane.mouseScrolled(mouseX, mouseY, delta))
             return true;
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
-    {
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (scrollPane.mouseDragged(mouseX, mouseY, button, dragX, dragY))
             return true;
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
-    public void checkForUpdates()
-    {
+    public void checkForUpdates() {
         Map<String, CompoundNBT> tags = new HashMap<String, CompoundNBT>();
         CompoundNBT nbt = new CompoundNBT();
         CompoundNBT nbtManager = new CompoundNBT();
         CompoundNBT nbtField;
-        for (GuiConfigEntry option : scrollPane.options)
-        {
+        for (GuiConfigEntry option : scrollPane.options) {
             if (!tags.containsKey(option.categoryName))
                 tags.put(option.categoryName, new CompoundNBT());
 
-            if (option.textField.hasChanged)
-            {
+            if (option.textField.hasChanged) {
                 changed = true;
                 nbtField = new CompoundNBT();
                 nbtField.putString("value", option.textField.text);
@@ -243,15 +219,11 @@ public class GuiConfigEditor extends Screen
 
         nbt.put("manager", nbtManager);
 
-        if (!nbtManager.isEmpty())
-        {
-            if (serverMode)
-            {
+        if (!nbtManager.isEmpty()) {
+            if (serverMode) {
                 ConfigModEX.debug("Sending advanced config data to server...");
                 NetworkHandler.sendServerPacket(0, nbt);
-            }
-            else
-            {
+            } else {
                 ConfigModEX.debug("Applying client changes...");
                 nbt.putBoolean("setClient", true);
                 ConfigManager.readNBT(nbt);
@@ -261,8 +233,7 @@ public class GuiConfigEditor extends Screen
     }
 
     @SuppressWarnings("deprecation")
-    public void blit(MatrixStack matrixStack, int x, int y, int textureX, int textureY, int width, int height)
-    {
+    public void blit(MatrixStack matrixStack, int x, int y, int textureX, int textureY, int width, int height) {
         RenderSystem.pushMatrix();
         float f = 0.00390625F / 2F;
         Tessellator tessellator = Tessellator.getInstance();
@@ -270,16 +241,15 @@ public class GuiConfigEditor extends Screen
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
-        vertexbuffer.vertex((double)(x + 0), (double)(y + height), (double)this.getBlitOffset()).uv((float)(textureX + 0) * f, (float)(textureY + height) * f).endVertex();
-        vertexbuffer.vertex((double)(x + width), (double)(y + height), (double)this.getBlitOffset()).uv((float)(textureX + width) * f, (float)(textureY + height) * f).endVertex();
-        vertexbuffer.vertex((double)(x + width), (double)(y + 0), (double)this.getBlitOffset()).uv((float)(textureX + width) * f, (float)(textureY + 0) * f).endVertex();
-        vertexbuffer.vertex((double)(x + 0), (double)(y + 0), (double)this.getBlitOffset()).uv((float)(textureX + 0) * f, (float)(textureY + 0) * f).endVertex();
+        vertexbuffer.vertex(x, y + height, this.getBlitOffset()).uv((float) (textureX) * f, (float) (textureY + height) * f).endVertex();
+        vertexbuffer.vertex(x + width, y + height, this.getBlitOffset()).uv((float) (textureX + width) * f, (float) (textureY + height) * f).endVertex();
+        vertexbuffer.vertex(x + width, y, this.getBlitOffset()).uv((float) (textureX + width) * f, (float) (textureY) * f).endVertex();
+        vertexbuffer.vertex(x, y, this.getBlitOffset()).uv((float) (textureX) * f, (float) (textureY) * f).endVertex();
         tessellator.end();
         RenderSystem.popMatrix();
     }
 
-    private String format(String local, Object... args)
-    {
+    private String format(String local, Object... args) {
         return I18n.get("config.gui." + local, args);
     }
 }

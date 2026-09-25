@@ -22,7 +22,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.api.WeatherDamageSource;
 import net.mrbt0907.weather2.config.ConfigGrab;
 import net.mrbt0907.weather2.registry.EntityRegistry;
@@ -120,6 +119,11 @@ public class EntityMovingBlock extends Entity implements IEntityAdditionalSpawnD
 
     public static void resetEntities() {
         EntityMovingBlock.loadedEntities.clear();
+    }
+
+    @Override
+    public boolean fireImmune() {
+        return material != null && material.isFlammable();
     }
 
     @Override
@@ -239,8 +243,7 @@ public class EntityMovingBlock extends Entity implements IEntityAdditionalSpawnD
                             }
 
                             if (entity.isPushable()) {
-                                dampening = 1.0F / ((entity.getBbHeight() > entity.getBbWidth()
-                                        ? entity.getBbHeight() : entity.getBbWidth()) * 0.25F + 1);
+                                dampening = 1.0F / ((Math.max(entity.getBbHeight(), entity.getBbWidth())) * 0.25F + 1);
                                 dampening = Math.min(dampening, 1.0F);
 
                                 Vector3d entityMotion = entity.getDeltaMovement();
@@ -279,27 +282,10 @@ public class EntityMovingBlock extends Entity implements IEntityAdditionalSpawnD
                             this));
 
                     if (raytrace != null && RayTraceResult.Type.BLOCK.equals(raytrace.getType())) {
-                        end_point = raytrace.getLocation();
 
-                        switch (raytrace.getDirection()) {
-                            case UP:
-                                end_point = end_point.add(0, -1, 0);
-                                break;
-                            case DOWN:
-                                end_point = end_point.add(0, 1, 0);
-                                break;
-                            case NORTH:
-                                end_point = end_point.add(0, 0, 1);
-                                break;
-                            case WEST:
-                                end_point = end_point.add(-1, 0, 0);
-                                break;
-                            case SOUTH:
-                                end_point = end_point.add(0, 0, -1);
-                                break;
-                            case EAST:
-                                end_point = end_point.add(1, 0, 0);
-                                break;
+                        if (raytrace.isInside()) {
+                            firstTick = false;
+                            return;
                         }
 
                         BlockPos target_pos = raytrace.getBlockPos();
@@ -307,8 +293,8 @@ public class EntityMovingBlock extends Entity implements IEntityAdditionalSpawnD
                         Block target_block = target.getBlock();
 
                         net.minecraftforge.common.ToolType tool_type = block.getHarvestTool(state);
-                        float speed_penalty = target_block.isToolEffective(target, tool_type) ? 1.0F : 0.3F;
-
+                        float speed_penalty = (tool_type != null && target_block.isToolEffective(target, tool_type))
+                                ? 1.0F : 0.3F;
                         float target_hardness = target.getDestroySpeed(level, target_pos);
 
                         if (target_hardness >= 0.0F && target_hardness < speed * speed_penalty) {
@@ -325,19 +311,22 @@ public class EntityMovingBlock extends Entity implements IEntityAdditionalSpawnD
                                 level.setBlock(target_pos, EntityMovingBlock.AIR, 2 | 16);
                                 level.levelEvent(2001, target_pos, Block.getId(state));
                             }
-                        } else if (Direction.UP.equals(raytrace.getDirection())) {
+
+                        } else if (Direction.DOWN.equals(raytrace.getDirection())) {
                             motionY = 0.0D;
                             this.setDeltaMovement(motionX, motionY, motionZ);
                             SoundType sound = block.getSoundType(state, level, pos, null);
                             if (sound != null)
                                 level.playSound(null, this.getX(), this.getY(), this.getZ(),
                                         sound.getHitSound(), SoundCategory.BLOCKS, 1.0F, 1.0F);
-                        } else if (Direction.DOWN.equals(raytrace.getDirection())) {
-                            BlockPos landing = new BlockPos((int) end_point.x, (int) end_point.y, (int) end_point.z);
-                            BlockState landingState = level.getBlockState(landing);
 
-                            if (WeatherUtilBlock.isReplacable(landingState, true) || tileEntityNBT != null)
-                                blockify((int) end_point.x, (int) end_point.y, (int) end_point.z);
+                        } else if (Direction.UP.equals(raytrace.getDirection())) {
+                            BlockPos landPos = target_pos.above();
+                            BlockState landState = level.getBlockState(landPos);
+
+                            if (WeatherUtilBlock.isReplacable(landState, true) || tileEntityNBT != null) {
+                                blockify(landPos.getX(), landPos.getY(), landPos.getZ());
+                            }
                         }
                     }
                 }
@@ -359,39 +348,27 @@ public class EntityMovingBlock extends Entity implements IEntityAdditionalSpawnD
 
     private void blockify(int x, int y, int z) {
         try {
-            Weather2.debug("blockify: attempting at pos=" + x + "," + y + "," + z + " block=" + (block != null ? block.getRegistryName() : "null") + " hasTileNBT=" + (tileEntityNBT != null));
-
             if (ConfigGrab.Storm_Tornado_rarityOfBreakOnFall < 0
                     || random.nextInt(ConfigGrab.Storm_Tornado_rarityOfBreakOnFall + 1) != 0) {
                 if (ChunkUtils.isValidPos(level, y)) {
                     BlockPos pos = new BlockPos(x, y, z);
                     ChunkUtils.setBlockState(level, pos, state);
                     level.levelEvent(2001, pos, Block.getId(state));
-                    Weather2.debug("blockify: SUCCESS placed " + block.getRegistryName() + " at " + pos);
 
                     if (tileEntityNBT != null) {
                         TileEntity tile = block.createTileEntity(state, level);
                         if (tile != null) {
                             tile.load(state, tileEntityNBT);
                             level.setBlockEntity(pos, tile);
-                            Weather2.debug("blockify: placed tile entity " + tileEntityNBT);
-                        } else {
-                            Weather2.debug("blockify: FAILED to create tile entity for " + block.getRegistryName());
                         }
                     }
-                } else {
-                    Weather2.debug("blockify: FAILED - invalid Y pos=" + y);
                 }
-            } else {
-                Weather2.debug("blockify: SKIPPED - rarity check failed (rarityOfBreakOnFall=" + ConfigGrab.Storm_Tornado_rarityOfBreakOnFall + ")");
             }
         } catch (Exception e) {
-            Weather2.debug("blockify: EXCEPTION at " + x + "," + y + "," + z + " - " + e.getMessage());
             e.printStackTrace();
         }
 
         this.remove();
-        Weather2.debug("blockify: entity removed");
     }
 
     @Override
@@ -403,10 +380,6 @@ public class EntityMovingBlock extends Entity implements IEntityAdditionalSpawnD
 
     @Override
     public boolean hurt(@Nonnull DamageSource source, float amount) {
-
-        if (source.isFire() && material != null && material.isFlammable())
-            return false;
-
         this.remove();
         return false;
     }

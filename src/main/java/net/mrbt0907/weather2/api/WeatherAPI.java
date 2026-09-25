@@ -17,6 +17,8 @@ import net.mrbt0907.weather2.api.event.EventRegisterParticleRenderer;
 import net.mrbt0907.weather2.api.event.EventRegisterStages;
 import net.mrbt0907.weather2.api.weather.AbstractWeatherRenderer;
 import net.mrbt0907.weather2.api.weather.WeatherEnum;
+import net.mrbt0907.weather2.client.rendering.April24StormRenderer;
+import net.mrbt0907.weather2.client.rendering.LegacyStormRenderer;
 import net.mrbt0907.weather2.client.rendering.NormalStormRenderer;
 import net.mrbt0907.weather2.config.ConfigClient;
 import net.mrbt0907.weather2.config.ConfigGrab;
@@ -142,8 +144,14 @@ public class WeatherAPI {
             Weather2.debug("Registering particle renderers...");
             particleRenderers.put(new ResourceLocation(Weather2.MODID, "normal"), NormalStormRenderer.class);
             Weather2.debug("Registered particle renderer " + Weather2.MODID + ":normal");
+            particleRenderers.put(new ResourceLocation(Weather2.MODID, "legacy"), LegacyStormRenderer.class);
+            Weather2.debug("Registered particle renderer " + Weather2.MODID + ":legacy");
+            particleRenderers.put(new ResourceLocation(Weather2.MODID, "april24"), April24StormRenderer.class);
+            Weather2.debug("Registered particle renderer " + Weather2.MODID + ":april24");
             EventRegisterParticleRenderer event = new EventRegisterParticleRenderer();
+
             MinecraftForge.EVENT_BUS.post(event);
+
             particleRenderers.putAll(event.getRegistry());
             Weather2.debug("All weather renderers updated: " + particleRenderers.size() + " total");
         }

@@ -8,11 +8,21 @@ import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.block.tile.*;
 
 @SuppressWarnings("unused")
-public class TileEntityRegistry
-{
+public class TileEntityRegistry {
     public static final DeferredRegister<TileEntityType<?>> TILE_ENTITIES =
             DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, Weather2.MODID);
-
+    public static final RegistryObject<TileEntityType<TileRadar>> WEATHER_FORECAST_TILE =
+            TILE_ENTITIES.register("weather_forecast",
+                    () -> TileEntityType.Builder.of(() -> new TileRadar(0),
+                            BlockRegistry.weather_radar.get()).build(null));
+    public static final RegistryObject<TileEntityType<TileRadar>> WEATHER_FORECAST_2_TILE =
+            TILE_ENTITIES.register("weather_forecast_2",
+                    () -> TileEntityType.Builder.of(() -> new TileRadar(1),
+                            BlockRegistry.weather_doppler_radar.get()).build(null));
+    public static final RegistryObject<TileEntityType<TileRadar>> WEATHER_FORECAST_3_TILE =
+            TILE_ENTITIES.register("weather_forecast_3",
+                    () -> TileEntityType.Builder.of(() -> new TileRadar(2),
+                            BlockRegistry.weather_pulse_radar.get()).build(null));
     public static final RegistryObject<TileEntityType<TileSiren>> TORNADO_SIREN_TILE =
             TILE_ENTITIES.register("tornado_siren",
                     () -> TileEntityType.Builder.of(TileSiren::new,
@@ -28,20 +38,12 @@ public class TileEntityRegistry
                     () -> TileEntityType.Builder.of(TileWindVane::new,
                             BlockRegistry.wind_vane.get()).build(null));
 
-    public static final RegistryObject<TileEntityType<TileRadar>> WEATHER_FORECAST_TILE =
-            TILE_ENTITIES.register("weather_forecast",
-                    () -> TileEntityType.Builder.of(() -> new TileRadar(0),
-                            BlockRegistry.weather_radar.get()).build(null));
 
-    public static final RegistryObject<TileEntityType<TileRadar>> WEATHER_FORECAST_2_TILE =
-            TILE_ENTITIES.register("weather_forecast_2",
-                    () -> TileEntityType.Builder.of(() -> new TileRadar(1),
-                            BlockRegistry.weather_doppler_radar.get()).build(null));
-
-    public static final RegistryObject<TileEntityType<TileRadar>> WEATHER_FORECAST_3_TILE =
-            TILE_ENTITIES.register("weather_forecast_3",
-                    () -> TileEntityType.Builder.of(() -> new TileRadar(2),
-                            BlockRegistry.weather_pulse_radar.get()).build(null));
+    public static final RegistryObject<TileEntityType<TileComputerRadar>> COMPUTER_RADAR_TILE =
+            TILE_ENTITIES.register("computer_radar",
+                    () -> TileEntityType.Builder.of(
+                            TileComputerRadar::new,
+                            BlockRegistry.computer_radar.get()).build(null));
 
     public static final RegistryObject<TileEntityType<TileWeatherConstructor>> WEATHER_MACHINE_TILE =
             TILE_ENTITIES.register("weather_machine",

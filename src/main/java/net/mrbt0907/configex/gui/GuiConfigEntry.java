@@ -8,8 +8,7 @@ import net.mrbt0907.configex.manager.FieldInstance;
 import net.mrbt0907.weather2.util.StringUtils;
 
 @OnlyIn(Dist.CLIENT)
-public class GuiConfigEntry
-{
+public class GuiConfigEntry {
     private static final Minecraft MC = Minecraft.getInstance();
     public final String categoryName;
     public final String name;
@@ -27,8 +26,7 @@ public class GuiConfigEntry
     public final boolean requiresRestart;
     public final boolean requiresWorldRestart;
 
-    public GuiConfigEntry(FieldInstance field, boolean serverValue)
-    {
+    public GuiConfigEntry(FieldInstance field, boolean serverValue) {
         categoryName = StringUtils.parseID(field.config.getName());
         name = field.displayName;
         registryName = field.registryName;
@@ -38,7 +36,7 @@ public class GuiConfigEntry
         textField = new GuiBetterTextField(MC.font, 0, 0, 130, 16, value, defaultValue);
         textField.isEnabled = field.hasPermission();
         hasPermission = field.hasPermission();
-        textField.setVisible((!(!hasPermission && field.hide) || hasPermission) && (field.enforce && (GuiConfigEditor.serverMode || ConfigManager.isSinglePlayer()) || !field.enforce));
+        textField.setVisible((!(!hasPermission && field.hide) || hasPermission) && (!field.enforce || (GuiConfigEditor.serverMode || ConfigManager.isSinglePlayer())));
         type = field.type;
         min = field.min;
         max = field.max;
@@ -49,8 +47,7 @@ public class GuiConfigEntry
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void initButton()
-    {
+    public void initButton() {
         textField.setText(value);
     }
 }

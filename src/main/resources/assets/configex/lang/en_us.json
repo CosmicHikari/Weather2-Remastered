@@ -1,0 +1,14 @@
+{
+  "config.gui.title": "Config Editor",
+  "config.gui.title.client": "Advanced Client Settings",
+  "config.gui.title.server": "Advanced Server Settings",
+  "config.gui.clientmode": "Client Settings",
+  "config.gui.servermode": "Server Settings",
+  "config.gui.next": "Next",
+  "config.gui.previous": "Last",
+  "config.gui.exit": "Save & Exit",
+  "config.gui.save": "Config changes have been saved!",
+  "config.gui.nosave": "Config changes have been aborted.",
+  "config.gui.entries.empty": "There are no options available",
+  "config.gui.entries.permission": "You do not have permission to see these options"
+}

@@ -1,20 +1,18 @@
 package net.mrbt0907.weather2.util;
 
-import javax.annotation.Nonnull;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 
-public class BlockSnapshot
-{
+import javax.annotation.Nonnull;
+
+public class BlockSnapshot {
     public final BlockState state;
     public final Block block;
     public final BlockPos pos;
     public final int x, y, z;
 
-    public BlockSnapshot(@Nonnull BlockState state, BlockPos pos)
-    {
+    public BlockSnapshot(@Nonnull BlockState state, BlockPos pos) {
         this.state = state;
         this.pos = pos;
         block = state.getBlock();
@@ -23,31 +21,26 @@ public class BlockSnapshot
         z = pos.getZ();
     }
 
-    public double distance(BlockSnapshot snapshot)
-    {
+    public double distance(BlockSnapshot snapshot) {
         return distance(snapshot.x, snapshot.y, snapshot.z);
     }
 
-    public double distance(double x, double y, double z)
-    {
+    public double distance(double x, double y, double z) {
         return Maths.distanceSq(this.x, this.y, this.z, x, y, z);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return x + z << 8 + y << 16;
     }
 
     @Override
-    public boolean equals(Object object)
-    {
+    public boolean equals(Object object) {
         return object instanceof BlockSnapshot && object.hashCode() == hashCode();
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "BlockSnapshot{block=" + block.getRegistryName() + ", x=" + x + ", y=" + y + ", z=" + z + '}';
     }
 }

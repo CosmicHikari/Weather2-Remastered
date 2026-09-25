@@ -20,7 +20,7 @@ public abstract class MixinLevelRenderer {
             at = @At("HEAD"), cancellable = true)
     private void renderRain(LightTexture lightTexture, float partialTicks,
                             double x, double y, double z, CallbackInfo callback) {
-        MixinWorldReciever.renderRain(partialTicks, callback);
+        MixinWorldReciever.renderRain(partialTicks, x, y, z, callback);
     }
 
     @Inject(method = "tickRain(Lnet/minecraft/client/renderer/ActiveRenderInfo;)V",
@@ -29,4 +29,5 @@ public abstract class MixinLevelRenderer {
         if (ConfigMisc.proxy_render_override && !ConfigClient.enable_vanilla_rain)
             callback.cancel();
     }
+
 }

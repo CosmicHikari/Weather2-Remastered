@@ -1,11 +1,10 @@
 package net.mrbt0907.weather2.weather;
 
+import net.corosus.coroutillegacy.util.CoroUtilEntOrParticle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
@@ -16,65 +15,48 @@ import net.mrbt0907.weather2.config.ConfigWind;
 import net.mrbt0907.weather2.network.packets.PacketWind;
 import net.mrbt0907.weather2.util.Maths;
 import net.mrbt0907.weather2.util.Maths.Vec3;
+import net.mrbt0907.weather2.util.WeatherUtil;
+import net.mrbt0907.weather2.util.WeatherUtilEntity;
 import net.mrbt0907.weather2.weather.storm.SandstormObject;
 import net.mrbt0907.weather2.weather.storm.StormObject;
 import net.mrbt0907.weather2.weather.storm.WeatherObject;
-import net.mrbt0907.weather2.util.WeatherUtil;
-import net.mrbt0907.weather2.util.WeatherUtilEntity;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.CoroUtil.util.CoroUtilEntOrParticle;
-
-public class WindManager
-{
+public class WindManager {
+    private final Map<Vec3, WeatherObject> cache = new HashMap<Vec3, WeatherObject>();
     public WeatherManager manager;
-
-
     public float windAngle = 0.0F;
     public float windSpeed = 0.0F;
     public float windAngleTarget = 0.0F;
     public float windSpeedTarget = 0.0F;
-
-
     public float windAngleGust = 0.0F;
     public float windSpeedGust = 0.0F;
     public int windTimeGust = 0;
-
-
-    private final Map<Vec3, WeatherObject> cache = new HashMap<Vec3, WeatherObject>();
     private long nextWindRefresh;
 
 
-    public WindManager(WeatherManager parManager)
-    {
+    public WindManager(WeatherManager parManager) {
         manager = parManager;
         windAngle = Maths.random(360);
         nextWindRefresh = 0L;
     }
 
-    public void tick()
-    {
+    public void tick() {
 
-        if (!manager.isClient())
-        {
-            if (!ConfigWind.enable)
-            {
+        if (!manager.isClient()) {
+            if (!ConfigWind.enable) {
                 windSpeed = 0.0F;
                 windSpeedTarget = 0.0F;
                 windSpeedGust = 0.0F;
                 windTimeGust = 0;
-            }
-            else
-            {
+            } else {
                 if (manager.world.getGameTime() % 200L == 0L)
                     cache.clear();
 
-                if (manager.getWorld().getGameTime() >= nextWindRefresh)
-                {
+                if (manager.getWorld().getGameTime() >= nextWindRefresh) {
                     nextWindRefresh = manager.getWorld().getGameTime() + Maths.random(ConfigWind.windRefreshMin, ConfigWind.windRefreshMax);
                     windSpeedTarget = (float) Maths.random(ConfigWind.windSpeedMin, ConfigWind.windSpeedMax);
                     windAngleTarget += (float) Maths.random(-ConfigWind.windAngleChangeMax, ConfigWind.windAngleChangeMax);
@@ -84,17 +66,13 @@ public class WindManager
 
                 tickWindChange();
 
-                if (ConfigWind.enableWindAffectsEntities)
-                {
+                if (ConfigWind.enableWindAffectsEntities) {
                     World world = manager.getWorld();
-                    if (world instanceof ServerWorld)
-                    {
+                    if (world instanceof ServerWorld) {
                         ServerWorld serverWorld = (ServerWorld) world;
 
-                        for (Entity entity : serverWorld.getAllEntities())
-                        {
-                            if (entity != null && entity.isAlive() && entity instanceof LivingEntity && WeatherUtilEntity.isEntityOutside(entity, true))
-                            {
+                        for (Entity entity : serverWorld.getAllEntities()) {
+                            if (entity != null && entity.isAlive() && entity instanceof LivingEntity && WeatherUtilEntity.isEntityOutside(entity, true)) {
                                 Vec3 a = getWindVectors(
                                         new Vec3(entity.getX(), entity.getY(), entity.getZ()),
                                         new Vec3(entity.getDeltaMovement().x, entity.getDeltaMovement().y, entity.getDeltaMovement().z),
@@ -108,12 +86,10 @@ public class WindManager
                     }
                 }
             }
-        }
-        else if (!WeatherUtil.isPaused())
+        } else if (!WeatherUtil.isPaused())
             if (ConfigWind.enable)
                 tickClient();
-            else
-            {
+            else {
                 windSpeed = 0.0F;
                 windSpeedTarget = 0.0F;
                 windSpeedGust = 0.0F;
@@ -122,16 +98,14 @@ public class WindManager
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void tickClient()
-    {
+    public void tickClient() {
         Minecraft mc = Minecraft.getInstance();
         tickWindChangeClient();
 
         if (manager.world.getGameTime() % 200L == 0L)
             cache.clear();
 
-        if (ConfigWind.enableWindAffectsEntities && mc.player != null && WeatherUtilEntity.isEntityOutside(mc.player, true))
-        {
+        if (ConfigWind.enableWindAffectsEntities && mc.player != null && WeatherUtilEntity.isEntityOutside(mc.player, true)) {
             Vec3 a = getWindVectors(new Vec3(mc.player.getX(), mc.player.getY(), mc.player.getZ()), new Vec3(mc.player.getDeltaMovement().x, mc.player.getDeltaMovement().y, mc.player.getDeltaMovement().z), (float) (WeatherUtilEntity.getWeight(mc.player) * 8.0F * ConfigWind.windPlayerWeightMult * (mc.player.isInWater() ? ConfigWind.windSwimmingWeightMult : 1.0F)), 0.05F, 5.0F);
 
 
@@ -139,11 +113,9 @@ public class WindManager
         }
     }
 
-    public void tickWindChange()
-    {
+    public void tickWindChange() {
 
-        if (windAngle != windAngleTarget)
-        {
+        if (windAngle != windAngleTarget) {
             float difference = windAngle + -(windAngle > 180 && windAngleTarget <= 180 ? windAngleTarget + 360.0F : windAngle <= 180 && windAngleTarget > 180 ? windAngleTarget + -360.0F : windAngleTarget);
             float change = (float) (1.95F * ConfigWind.windChangeMult);
             if (Math.abs(difference) > change)
@@ -158,8 +130,7 @@ public class WindManager
         }
 
 
-        if (windSpeed != windSpeedTarget)
-        {
+        if (windSpeed != windSpeedTarget) {
             float difference = windSpeed - windSpeedTarget;
             float change = (float) (0.015F * ConfigWind.windChangeMult);
             if (Math.abs(difference) > change)
@@ -173,11 +144,9 @@ public class WindManager
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void tickWindChangeClient()
-    {
+    public void tickWindChangeClient() {
 
-        if (windAngle != windAngleTarget)
-        {
+        if (windAngle != windAngleTarget) {
             float difference = windAngle + -(windAngle > 180 && windAngleTarget <= 180 ? windAngleTarget + 360.0F : windAngle <= 180 && windAngleTarget > 180 ? windAngleTarget + -360.0F : windAngleTarget);
             float change = (float) (1.95F * ConfigWind.windChangeMult);
             if (Math.abs(difference) > change)
@@ -192,8 +161,7 @@ public class WindManager
         }
 
 
-        if (windSpeed != windSpeedTarget)
-        {
+        if (windSpeed != windSpeedTarget) {
             float difference = windSpeed - windSpeedTarget;
             float change = (float) (0.015F * ConfigWind.windChangeMult);
             if (Math.abs(difference) > change)
@@ -227,8 +195,7 @@ public class WindManager
         windTimeGust = parNBT.getInt("windTimeGust");
     }
 
-    public void syncData()
-    {
+    public void syncData() {
         if (manager instanceof WeatherManagerServer)
             PacketWind.update(manager.dim, this);
     }
@@ -237,12 +204,11 @@ public class WindManager
         manager = null;
     }
 
-    public void getEntityWindVectors(Object ent)
-    {
+    public void getEntityWindVectors(Object ent) {
         getEntityWindVectors(ent, 0.1F, 0.5F);
     }
 
-    
+
     public void getEntityWindVectors(Object ent, float multiplier, float maxSpeed) {
 
         Vec3 pos = manager.world.isClientSide ? new Vec3(Minecraft.getInstance().player.blockPosition()) : new Vec3(CoroUtilEntOrParticle.getPosX(ent), CoroUtilEntOrParticle.getPosY(ent), CoroUtilEntOrParticle.getPosZ(ent));
@@ -253,12 +219,11 @@ public class WindManager
     }
 
     public Vec3 applyWindForceImpl(Vec3 pos, Vec3 motion, float weight) {
-        return getWindVectors(pos, motion, weight, 1F/20F, 0.5F);
+        return getWindVectors(pos, motion, weight, 1F / 20F, 0.5F);
     }
 
-    
-    public Vec3 getWindVectors(Vec3 pos, Vec3 motion, float weight, float multiplier, float maxSpeed)
-    {
+
+    public Vec3 getWindVectors(Vec3 pos, Vec3 motion, float weight, float multiplier, float maxSpeed) {
         float windAngle = getWindAngle(pos);
         float windSpeed = getWindSpeed(pos);
 
@@ -272,13 +237,10 @@ public class WindManager
         float objWeight = weight;
 
 
-
         if (objWeight == 0.0F)
             objWeight = 0.001F;
         else if (objWeight < 0.0F)
             return motion;
-
-
 
 
         float weightDiff = windWeight / objWeight;
@@ -296,46 +258,37 @@ public class WindManager
         return newMotion;
     }
 
-    public float getWindSpeed(Vec3 pos)
-    {
+    public float getWindSpeed(Vec3 pos) {
         if (pos == null) return manager.windManager.windSpeed;
 
         WeatherObject wo = getWeatherObject(pos);
 
-        if (wo != null)
-        {
+        if (wo != null) {
             float size = (wo.size * 0.90F);
-            return Math.max(manager.windManager.windSpeed, (float)((wo instanceof SandstormObject ? 7.5F : ((StormObject)wo).windSpeed) * Math.min((size - wo.pos.distanceSq(pos) + (wo instanceof SandstormObject ? size : ((StormObject)wo).funnelSize)) / size, 1.0F)));
-        }
-        else
+            return Math.max(manager.windManager.windSpeed, (float) ((wo instanceof SandstormObject ? 7.5F : ((StormObject) wo).windSpeed) * Math.min((size - wo.pos.distanceSq(pos) + (wo instanceof SandstormObject ? size : ((StormObject) wo).funnelSize)) / size, 1.0F)));
+        } else
             return manager.windManager.windSpeed;
     }
 
-    public float getWindAngle(Vec3 pos)
-    {
+    public float getWindAngle(Vec3 pos) {
         if (pos == null) return manager.windManager.windAngle;
 
         WeatherObject wo = getWeatherObject(pos);
-        if (wo != null)
-        {
-            float yaw = (-((float)Maths.fastATan2(wo.posGround.posX - pos.posX, wo.posGround.posZ - pos.posZ)) * 180.0F / (float)Math.PI) + 360.0F;
+        if (wo != null) {
+            float yaw = (-((float) Maths.fastATan2(wo.posGround.posX - pos.posX, wo.posGround.posZ - pos.posZ)) * 180.0F / (float) Math.PI) + 360.0F;
             return yaw % 360.0F;
-        }
-        else
+        } else
             return manager.windManager.windAngle;
     }
 
-    public Vec3 getWindForce()
-    {
+    public Vec3 getWindForce() {
         float windX = (float) -Maths.fastSin(Math.toRadians(windAngle)) * windSpeed;
         float windZ = (float) Maths.fastCos(Math.toRadians(windAngle)) * windSpeed;
         return new Vec3(windX, 0, windZ);
     }
 
-    private WeatherObject getWeatherObject(Vec3 pos)
-    {
-        for (Entry<Vec3, WeatherObject> entry : cache.entrySet())
-        {
+    private WeatherObject getWeatherObject(Vec3 pos) {
+        for (Entry<Vec3, WeatherObject> entry : cache.entrySet()) {
             if (pos.distanceSq(entry.getKey()) < 300.0D)
                 return entry.getValue();
         }

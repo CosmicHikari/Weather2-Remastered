@@ -11,20 +11,17 @@ import net.minecraft.util.math.vector.Vector3f;
 import net.mrbt0907.weather2.Weather2;
 import net.mrbt0907.weather2.block.tile.TileAnemometer;
 
-public class RenderAnemometer extends TileEntityRenderer<TileAnemometer>
-{
+public class RenderAnemometer extends TileEntityRenderer<TileAnemometer> {
     public ModelAnemometer model;
-    public ResourceLocation texture = new ResourceLocation(Weather2.OLD_MODID + ":textures/blocks/anemometer_custom.png");
+    public ResourceLocation texture = new ResourceLocation(Weather2.OLD_MODID + ":textures/block/anemometer_custom.png");
 
-    public RenderAnemometer(TileEntityRendererDispatcher rendererDispatcherIn)
-    {
+    public RenderAnemometer(TileEntityRendererDispatcher rendererDispatcherIn) {
         super(rendererDispatcherIn);
         model = new ModelAnemometer();
     }
 
     @Override
-    public void render(TileAnemometer tileEntity, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay)
-    {
+    public void render(TileAnemometer tileEntity, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay) {
         float renderAngle = tileEntity.smoothAnglePrev + (tileEntity.smoothAngle - tileEntity.smoothAnglePrev) * partialTicks;
 
         float scale = 1F;
@@ -39,25 +36,19 @@ public class RenderAnemometer extends TileEntityRenderer<TileAnemometer>
 
         boolean isInv = false;
 
-        if (isInv)
-        {
+        if (isInv) {
             matrixStack.translate(0, 1.0F * model.scaleY * model.scaleItem, 0);
             matrixStack.scale(model.scaleItem, model.scaleItem, model.scaleItem);
             matrixStack.mulPose(Vector3f.YP.rotationDegrees(180));
-        }
-        else
-        {
+        } else {
             matrixStack.translate(0, 1.5F * model.scaleY, 0);
         }
 
         matrixStack.mulPose(Vector3f.ZP.rotationDegrees(180));
 
-        if (!isInv)
-        {
+        if (!isInv) {
             matrixStack.translate(model.offsetX, model.offsetY, model.offsetZ);
-        }
-        else
-        {
+        } else {
             matrixStack.translate(model.offsetInvX, model.offsetInvY, 0);
         }
 

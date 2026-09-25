@@ -1,6 +1,6 @@
 package net.mrbt0907.weather2.client.foliage;
 
-import net.extendedrenderer.foliage.Foliage;
+import net.corosus.extendedrenderer.foliage.Foliage;
 
 import java.util.ArrayList;
 import java.util.List;

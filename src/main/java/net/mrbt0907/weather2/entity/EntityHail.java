@@ -1,19 +1,26 @@
 package net.mrbt0907.weather2.entity;
 
-import net.CoroUtil.api.weather.IWindHandler;
+import net.corosus.coroutillegacy.api.weather.IWindHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntitySize;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.Pose;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.IPacket;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.mrbt0907.weather2.api.WeatherDamageSource;
 import net.mrbt0907.weather2.registry.EntityRegistry;
@@ -22,9 +29,12 @@ import net.mrbt0907.weather2.util.Maths;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-public class EntityHail extends Entity implements IWindHandler {
+public class EntityHail extends Entity implements IWindHandler, IEntityAdditionalSpawnData {
     protected static final BlockState AIR = Blocks.AIR.defaultBlockState();
     protected static final BlockState ICE = Blocks.ICE.defaultBlockState();
+
+    private static final DataParameter<Float> DATA_SIZE = EntityDataManager.defineId(EntityHail.class, DataSerializers.FLOAT);
+
     public double size;
 
     public EntityHail(EntityType<?> type, World world) {
@@ -43,17 +53,30 @@ public class EntityHail extends Entity implements IWindHandler {
 
     @Override
     protected void defineSynchedData() {
+        this.entityData.define(DATA_SIZE, 0.3F);
     }
 
     @Override
     protected void readAdditionalSaveData(@Nonnull CompoundNBT nbt) {
-        if (nbt.contains("size"))
-            size = nbt.getDouble("size");
+        if (nbt.contains("size")) {
+            float sizeValue = nbt.getFloat("size");
+            this.size = sizeValue;
+            this.entityData.set(DATA_SIZE, sizeValue);
+        }
     }
 
     @Override
     protected void addAdditionalSaveData(@Nonnull CompoundNBT nbt) {
-        nbt.putDouble("size", size);
+        nbt.putFloat("size", (float) size);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(DataParameter<?> key) {
+        if (DATA_SIZE.equals(key)) {
+            this.size = this.entityData.get(DATA_SIZE);
+            this.refreshDimensions();
+        }
+        super.onSyncedDataUpdated(key);
     }
 
     @Override
@@ -79,7 +102,6 @@ public class EntityHail extends Entity implements IWindHandler {
         this.zo = this.getZ();
 
         this.setPos(this.getX() + motionX, this.getY() + motionY, this.getZ() + motionZ);
-
         this.setDeltaMovement(motionX, motionY, motionZ);
 
         if (this.getY() < -64.0D)
@@ -91,7 +113,6 @@ public class EntityHail extends Entity implements IWindHandler {
                 return;
             }
 
-
             Vector3d start_point = new Vector3d(this.getX(), this.getY(), this.getZ());
             Vector3d end_point = new Vector3d(this.getX() + motionX * 1.3D, this.getY() + motionY * 1.3D, this.getZ() + motionZ * 1.3D);
 
@@ -100,7 +121,6 @@ public class EntityHail extends Entity implements IWindHandler {
                 if (tickCount % 5 == 0 && EntityMovingBlock.loadedEntities.containsKey(level.dimension()))
                     for (Entity entity : EntityMovingBlock.loadedEntities.get(level.dimension())) {
                         AxisAlignedBB expandedBox = entity.getBoundingBox().inflate(this.getBbWidth());
-
                         Optional<Vector3d> hitPoint = expandedBox.clip(start_point, end_point);
 
                         if (hitPoint.isPresent()) {
@@ -117,18 +137,15 @@ public class EntityHail extends Entity implements IWindHandler {
                     }
             }
 
-            end_point = new Vector3d(this.getX() + motionX * 1.3D, this.getY() + motionY * 1.3D, this.getZ() + motionZ * 1.3D);
             BlockRayTraceResult raytrace = level.clip(new RayTraceContext(
                     new Vector3d(this.getX(), this.getY(), this.getZ()),
-                    end_point,
+                    new Vector3d(this.getX() + motionX * 1.3D, this.getY() + motionY * 1.3D, this.getZ() + motionZ * 1.3D),
                     RayTraceContext.BlockMode.COLLIDER,
                     RayTraceContext.FluidMode.NONE,
                     this
             ));
 
-            if (raytrace != null) {
-                end_point = new Vector3d(raytrace.getLocation().x, raytrace.getLocation().y, raytrace.getLocation().z);
-
+            if (raytrace != null && raytrace.getType() != RayTraceResult.Type.MISS) {
                 if (RayTraceResult.Type.BLOCK.equals(raytrace.getType())) {
                     double dampening;
                     BlockPos target_pos = raytrace.getBlockPos();
@@ -152,7 +169,8 @@ public class EntityHail extends Entity implements IWindHandler {
                         speed = (float) Maths.speedSq(motionX, motionY, motionZ);
                         if (speed < 0.01F) {
                             if (Maths.chance())
-                                level.playSound(null, new BlockPos(this.getX(), this.getY(), this.getZ()), SoundEvents.STONE_STEP, SoundCategory.AMBIENT, 1F, 5F - this.getBbWidth() * 5.0F);
+                                level.playSound(null, new BlockPos(this.getX(), this.getY(), this.getZ()),
+                                        SoundEvents.STONE_STEP, SoundCategory.AMBIENT, 1F, 5F - this.getBbWidth() * 5.0F);
                             this.remove();
                         } else {
                             level.setBlock(target_pos, EntityHail.AIR, 2 | 16);
@@ -160,7 +178,8 @@ public class EntityHail extends Entity implements IWindHandler {
                         }
                     } else {
                         if (Maths.chance())
-                            level.playSound(null, new BlockPos(this.getX(), this.getY(), this.getZ()), SoundEvents.STONE_STEP, SoundCategory.AMBIENT, 1F, 5F - this.getBbWidth() * 5.0F);
+                            level.playSound(null, new BlockPos(this.getX(), this.getY(), this.getZ()),
+                                    SoundEvents.STONE_STEP, SoundCategory.AMBIENT, 1F, 5F - this.getBbWidth() * 5.0F);
                         this.remove();
                     }
                 }
@@ -170,7 +189,8 @@ public class EntityHail extends Entity implements IWindHandler {
 
     @Override
     public boolean hurt(@Nonnull DamageSource source, float amount) {
-        level.playSound(null, new BlockPos(this.getX(), this.getY(), this.getZ()), SoundEvents.GLASS_BREAK, SoundCategory.AMBIENT, 1F, 5F - this.getBbWidth() * 5.0F);
+        level.playSound(null, new BlockPos(this.getX(), this.getY(), this.getZ()),
+                SoundEvents.GLASS_BREAK, SoundCategory.AMBIENT, 1F, 5F - this.getBbWidth() * 5.0F);
         this.remove();
         return false;
     }
@@ -180,11 +200,15 @@ public class EntityHail extends Entity implements IWindHandler {
     }
 
     protected void setSize(float width, float height) {
-        size = width;
-        this.setBoundingBox(new AxisAlignedBB(
-                this.getX() - width / 2, this.getY(), this.getZ() - width / 2,
-                this.getX() + width / 2, this.getY() + height, this.getZ() + width / 2
-        ));
+        this.size = width;
+        this.entityData.set(DATA_SIZE, width);
+        this.refreshDimensions();
+    }
+
+    @Override
+    public EntitySize getDimensions(Pose pose) {
+        float s = this.entityData.get(DATA_SIZE);
+        return EntitySize.scalable(s, s);
     }
 
     @Override
@@ -195,6 +219,19 @@ public class EntityHail extends Entity implements IWindHandler {
     @Override
     public int getParticleDecayExtra() {
         return 0;
+    }
+
+    @Override
+    public void writeSpawnData(PacketBuffer buffer) {
+        buffer.writeFloat((float) size);
+    }
+
+    @Override
+    public void readSpawnData(PacketBuffer buffer) {
+        float sizeValue = buffer.readFloat();
+        this.size = sizeValue;
+        this.entityData.set(DATA_SIZE, sizeValue);
+        this.refreshDimensions();
     }
 
     @Override

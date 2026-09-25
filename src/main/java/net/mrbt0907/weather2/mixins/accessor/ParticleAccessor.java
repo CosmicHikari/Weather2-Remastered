@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface ParticleAccessor {
 
 
-
     @Accessor("x")
     double getX();
 

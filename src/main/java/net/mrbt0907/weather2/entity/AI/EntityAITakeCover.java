@@ -1,10 +1,8 @@
 package net.mrbt0907.weather2.entity.AI;
 
-import net.CoroUtil.ai.ITaskInitializer;
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.village.PointOfInterestManager;
@@ -20,99 +18,115 @@ import net.mrbt0907.weather2.weather.WeatherManager;
 import java.util.EnumSet;
 import java.util.Optional;
 
-public class EntityAITakeCover extends Goal implements ITaskInitializer {
+public class EntityAITakeCover extends Goal {
+    private static final double SHELTER_REACH_DIST_SQ = 6.25D;
+    private final CreatureEntity mob;
     public boolean isAlert = false;
-    protected PathNavigator navigator;
-    private CreatureEntity entity;
-    private BlockPos doorPos;
-    private int insidePosX = -1;
-    private int insidePosZ = -1;
+    private BlockPos shelterPos = null;
+    private int pathRetryTimer = 0;
 
     public EntityAITakeCover(CreatureEntity entity) {
-        this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-        setEntity(entity);
+        this.mob = entity;
+        this.setFlags(EnumSet.of(Flag.MOVE));
+    }
+
+    private boolean hasReachedShelter() {
+        if (shelterPos == null) return false;
+        return mob.distanceToSqr(
+                shelterPos.getX() + 0.5D,
+                shelterPos.getY(),
+                shelterPos.getZ() + 0.5D) <= SHELTER_REACH_DIST_SQ;
+    }
+
+    private boolean isStormActive() {
+        if (isAlert) return true;
+        WeatherManager weatherManager = ServerTickHandler.getWeatherSystemForDim(mob.level.dimension());
+        if (weatherManager == null) return false;
+
+        double rangeSq = ConfigStorm.villager_detection_range;
+        Vec3 pos = new Vec3(mob.blockPosition());
+        return weatherManager.getWorstWeather(
+                pos, rangeSq, Stage.SEVERE.getStage(),
+                Integer.MAX_VALUE, WeatherEnum.Type.CLOUD) != null;
+    }
+
+    private boolean findShelter() {
+        if (!(mob.level instanceof ServerWorld)) return false;
+        ServerWorld serverWorld = (ServerWorld) mob.level;
+
+        Optional<BlockPos> nearestPOI = serverWorld.getPoiManager().findClosest(
+                PointOfInterestType.HOME.getPredicate(),
+                mob.blockPosition(),
+                64,
+                PointOfInterestManager.Status.ANY
+        );
+
+        if (nearestPOI.isPresent()) {
+            shelterPos = nearestPOI.get();
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean canUse() {
-        WeatherManager weatherManager = ServerTickHandler.getWeatherSystemForDim(entity.level.dimension());
-        if (weatherManager == null) return false;
-
-        BlockPos blockpos = entity.blockPosition();
-        Vec3 pos = new Vec3(blockpos);
-        boolean runInside = isAlert || weatherManager.getWorstWeather(pos, ConfigStorm.villager_detection_range, Stage.SEVERE.getStage(), Integer.MAX_VALUE, WeatherEnum.Type.CLOUD) != null;
-
-        if (runInside) {
-            if (insidePosX != -1 && entity.distanceToSqr(insidePosX, entity.getY(), insidePosZ) < 4.0D)
-                return false;
-            else {
-                if (entity.level instanceof ServerWorld) {
-                    ServerWorld serverWorld = (ServerWorld) entity.level;
-                    PointOfInterestManager poiManager = serverWorld.getPoiManager();
-
-                    Optional<BlockPos> nearestPOI = poiManager.findClosest(
-                            poi -> poi == PointOfInterestType.HOME,
-                            blockpos,
-                            14,
-                            PointOfInterestManager.Status.ANY
-                    );
-
-                    if (nearestPOI.isPresent()) {
-                        doorPos = nearestPOI.get();
-                        return true;
-                    }
-
-                    return false;
-                }
-                return false;
-            }
-        } else
-            return false;
+        if (!isStormActive()) return false;
+        if (hasReachedShelter()) return false;
+        return findShelter();
     }
 
     @Override
     public boolean canContinueToUse() {
-        return !navigator.isDone();
+        if (!isStormActive()) return false;
+        if (hasReachedShelter()) return false;
+        return !mob.getNavigation().isDone();
     }
 
     @Override
     public void start() {
-        insidePosX = -1;
+        pathRetryTimer = 0;
+        pathToShelter();
+    }
 
-        if (doorPos == null)
+    @Override
+    public void tick() {
+        if (shelterPos == null) return;
+        if (hasReachedShelter()) {
+            mob.getNavigation().stop();
             return;
+        }
 
-        int i = doorPos.getX();
-        int j = doorPos.getY();
-        int k = doorPos.getZ();
+        pathRetryTimer--;
+        if (pathRetryTimer <= 0 || mob.getNavigation().isDone()) {
+            pathRetryTimer = 20;
+            pathToShelter();
+        }
+    }
 
-        if (entity.distanceToSqr(doorPos.getX(), doorPos.getY(), doorPos.getZ()) > 256.0D) {
-            Vector3d vec3d = RandomPositionGenerator.getLandPosTowards(
-                    this.entity,
-                    14,
-                    3,
-                    new Vector3d((double) i + 0.5D, j, (double) k + 0.5D)
-            );
+    private void pathToShelter() {
+        if (shelterPos == null) return;
 
-            if (vec3d != null)
-                navigator.moveTo(vec3d.x, vec3d.y, vec3d.z, 1.0D);
-        } else
-            navigator.moveTo((double) i + 0.5D, j, (double) k + 0.5D, 1.0D);
+        double targetX = shelterPos.getX() + 0.5D;
+        double targetY = shelterPos.getY();
+        double targetZ = shelterPos.getZ() + 0.5D;
+
+        if (mob.distanceToSqr(targetX, targetY, targetZ) > 256.0D) {
+            Vector3d waypoint = RandomPositionGenerator.getPosTowards(
+                    mob, 14, 3, new Vector3d(targetX, targetY, targetZ));
+            if (waypoint != null) {
+                mob.getNavigation().moveTo(waypoint.x, waypoint.y, waypoint.z, 1.0D);
+                return;
+            }
+        }
+
+        mob.getNavigation().moveTo(targetX, targetY, targetZ, 1.0D);
     }
 
     @Override
     public void stop() {
-        if (doorPos != null) {
-            insidePosX = doorPos.getX();
-            insidePosZ = doorPos.getZ();
-        }
-        doorPos = null;
         isAlert = false;
-    }
-
-    @Override
-    public void setEntity(CreatureEntity entity) {
-        this.entity = entity;
-        navigator = entity.getNavigation();
+        shelterPos = null;
+        pathRetryTimer = 0;
+        mob.getNavigation().stop();
     }
 }
